@@ -1,12 +1,18 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse } from 'next/server';
 import db from '../../../lib/db';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export async function GET() {
 	try {
-		await db.query('SELECT NOW()');
-		res.status(200).json({ message: 'Database connection is healthy' });
+		const result = await db.query('SELECT * FROM USERS');
+		return NextResponse.json({
+			message: result,
+			timestamp: result.rows[0].now,
+		});
 	} catch (error) {
 		console.error('Database connection error:', error);
-		res.status(500).json({ message: 'Database connection error' });
+		return NextResponse.json(
+			{ message: 'Database connection error' },
+			{ status: 500 }
+		);
 	}
 }
