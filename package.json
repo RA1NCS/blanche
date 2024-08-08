@@ -6,7 +6,9 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"lint": "next lint"
+		"lint": "next lint",
+		"dbsetup": "psql postgresql://ssquared@blanche-postgres.c386qaeo26du.us-east-2.rds.amazonaws.com:5432/blanche-postgres -f ./lib/setup.sql",
+		"sampledb": "psql postgresql://ssquared@blanche-postgres.c386qaeo26du.us-east-2.rds.amazonaws.com:5432/blanche-postgres -f ./lib/sampledb.sql"
 	},
 	"dependencies": {
 		"axios": "^1.7.2",
