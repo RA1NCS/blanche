@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { SignOutButton } from '@clerk/nextjs';
 
 export default function UserProfile() {
 	const [isHovered, setIsHovered] = useState(false);
@@ -50,12 +51,14 @@ export default function UserProfile() {
 						: 'opacity-0 translate-x-4'
 				}`}
 			>
-				<button className="flex items-center text-gray-600 bg-gray-200 hover:bg-gray-300 rounded-lg p-2 transition duration-300">
-					<FontAwesomeIcon
-						icon={faSignOutAlt}
-						className="w-4 h-4"
-					/>
-				</button>
+				<SignOutButton>
+					<button className="flex items-center text-gray-600 bg-gray-200 hover:bg-gray-300 rounded-lg p-2 transition duration-300">
+						<FontAwesomeIcon
+							icon={faSignOutAlt}
+							className="w-4 h-4"
+						/>
+					</button>
+				</SignOutButton>
 			</div>
 		</div>
 	);

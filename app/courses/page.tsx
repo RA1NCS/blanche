@@ -1,11 +1,10 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 
 export default async function Home() {
-	const { userId } = auth();
 	const user = await currentUser();
 
-	if (!userId || !user) {
-		return <div> You are not logged in </div>;
+	if (!user) {
+		return null;
 	}
 
 	return (
