@@ -10,6 +10,7 @@ const isProtectedRoute = createRouteMatcher([
 
 export default clerkMiddleware((auth, req) => {
 	const { userId } = auth();
+	const url = req.nextUrl;
 
 	if (isProtectedRoute(req)) {
 		if (!userId) {
@@ -17,7 +18,10 @@ export default clerkMiddleware((auth, req) => {
 		}
 	}
 
-	return NextResponse.next();
+	const response = NextResponse.next();
+	response.headers.set('X-Pathname', url.pathname);
+
+	return response;
 });
 
 export const config = {
