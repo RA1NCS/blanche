@@ -1,3 +1,211 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+	font-family: 'MillerDisplay';
+	src: url('/fonts/MillerDisplay-Bold.ttf') format('truetype');
+	font-weight: bold;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'MillerDisplay';
+	src: url('/fonts/Miller_Display_Bold.otf') format('opentype'),
+		url('/fonts/MillerDisplay-Bold.ttf') format('truetype');
+	font-weight: bold;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'MillerDisplay';
+	src: url('/fonts/Miller_Display_Italic.otf') format('opentype');
+	font-weight: normal;
+	font-style: italic;
+}
+
+@font-face {
+	font-family: 'MillerDisplay';
+	src: url('/fonts/Miller_Display_Light.otf') format('opentype');
+	font-weight: 300;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'MillerText';
+	src: url('/fonts/Miller_Text_Bold.otf') format('opentype');
+	font-weight: bold;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'MillerText';
+	src: url('/fonts/Miller_Text_Roman.otf') format('opentype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'MillerText';
+	src: url('/fonts/Miller_Text_Italic.otf') format('opentype');
+	font-weight: normal;
+	font-style: italic;
+}
+
+@font-face {
+	font-family: 'Futura Condensed Medium';
+	src: url('/fonts/futura-condensed-pt-medium.otf') format('opentype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Futura Condensed Medium Oblique';
+	src: url('/fonts/futura-condensed-pt-medium-oblique.otf') format('opentype');
+	font-weight: normal;
+	font-style: oblique;
+}
+
+@font-face {
+	font-family: 'Futura PT Bold';
+	src: url('/fonts/futura-pt-bold.otf') format('opentype');
+	font-weight: bold;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Futura PT Bold Oblique';
+	src: url('/fonts/futura-pt-bold-oblique.otf') format('opentype');
+	font-weight: bold;
+	font-style: oblique;
+}
+
+@font-face {
+	font-family: 'Futura PT Book';
+	src: url('/fonts/futura-pt-book.otf') format('opentype');
+	font-weight: 400;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Futura PT Book Oblique';
+	src: url('/fonts/futura-pt-book-oblique.otf') format('opentype');
+	font-weight: 400;
+	font-style: oblique;
+}
+
+@font-face {
+	font-family: 'Futura PT DemiBold';
+	src: url('/fonts/futura-pt-demibold.otf') format('opentype');
+	font-weight: 600;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Futura PT DemiBold Oblique';
+	src: url('/fonts/futura-pt-demibold-oblique.otf') format('opentype');
+	font-weight: 600;
+	font-style: oblique;
+}
+
+@font-face {
+	font-family: 'Futura PT Heavy';
+	src: url('/fonts/futura-pt-heavy.otf') format('opentype');
+	font-weight: 800;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Futura PT Heavy Oblique';
+	src: url('/fonts/futura-pt-heavy-oblique.otf') format('opentype');
+	font-weight: 800;
+	font-style: oblique;
+}
+
+@font-face {
+	font-family: 'Futura PT Light';
+	src: url('/fonts/futura-pt-light.otf') format('opentype');
+	font-weight: 300;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Futura PT Light Oblique';
+	src: url('/fonts/futura-pt-light-oblique.otf') format('opentype');
+	font-weight: 300;
+	font-style: oblique;
+}
+
+@font-face {
+	font-family: 'Futura PT Medium';
+	src: url('/fonts/futura-pt-medium.otf') format('opentype');
+	font-weight: 500;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: 'Futura PT Medium Oblique';
+	src: url('/fonts/futura-pt-medium-oblique.otf') format('opentype');
+	font-weight: 500;
+	font-style: oblique;
+}
+
+.font-futura-condensed-medium {
+	font-family: 'Futura Condensed Medium', sans-serif;
+}
+
+.font-futura-condensed-medium-oblique {
+	font-family: 'Futura Condensed Medium Oblique', sans-serif;
+}
+
+.font-futura-bold {
+	font-family: 'Futura PT Bold', sans-serif;
+}
+
+.font-futura-bold-oblique {
+	font-family: 'Futura PT Bold Oblique', sans-serif;
+}
+
+.font-futura-book {
+	font-family: 'Futura PT Book', sans-serif;
+}
+
+.font-futura-book-oblique {
+	font-family: 'Futura PT Book Oblique', sans-serif;
+}
+
+.font-futura-demibold {
+	font-family: 'Futura PT DemiBold', sans-serif;
+}
+
+.font-futura-demibold-oblique {
+	font-family: 'Futura PT DemiBold Oblique', sans-serif;
+}
+
+.font-futura-heavy {
+	font-family: 'Futura PT Heavy', sans-serif;
+}
+
+.font-futura-heavy-oblique {
+	font-family: 'Futura PT Heavy Oblique', sans-serif;
+}
+
+.font-futura-light {
+	font-family: 'Futura PT Light', sans-serif;
+}
+
+.font-futura-light-oblique {
+	font-family: 'Futura PT Light Oblique', sans-serif;
+}
+
+.font-futura-medium {
+	font-family: 'Futura PT Medium', sans-serif;
+}
+
+.font-futura-medium-oblique {
+	font-family: 'Futura PT Medium Oblique', sans-serif;
+}
+
+.font-miller-display {
+	font-family: 'MillerDisplay', sans-serif;
+}

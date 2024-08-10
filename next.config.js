@@ -6,6 +6,11 @@ module.exports = {
 				hostname: 'drexel.edu',
 				pathname: '/**',
 			},
+			{
+				protocol: 'https',
+				hostname: 'tailwindui.com',
+				pathname: '/**',
+			},
 		],
 	},
 };

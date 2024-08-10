@@ -8,14 +8,21 @@ const config: Config = {
 	],
 	theme: {
 		extend: {
+			colors: {
+				'drexel-blue': '#002F6C',
+				'drexel-yellow': '#F2CA00',
+			},
+			fontFamily: {
+				'miller-display': ['MillerDisplay', 'serif'],
+				'miller-text': ['MillerText', 'serif'],
+			},
 			backgroundImage: {
-				'gradient-radial':
-					'radial-gradient(var(--tw-gradient-stops))',
-				'gradient-conic':
-					'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+				'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
 			},
 		},
 	},
-	plugins: [],
+	plugins: [require('@tailwindcss/forms'), ],
 };
+
 export default config;

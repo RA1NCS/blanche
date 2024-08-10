@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				<ClerkProvider>
 					<div className="flex h-screen">
 						{!hideNavbar && <Navbar />}
-						<main className="flex-1 p-10">
+						<main className="flex-1">
 							{children}
 						</main>
 					</div>
