@@ -21,7 +21,7 @@ export default function UserProfile() {
 				}`}
 			>
 				<Image
-					src="/logo.jpeg"
+					src="/seal.png"
 					alt="User Profile"
 					width={40}
 					height={40}

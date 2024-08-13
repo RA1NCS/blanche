@@ -10,11 +10,11 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+	const postLoginRoutes =
+		process.env.NEXT_PUBLIC_POST_LOGIN_ROUTES?.split(',') || [];
 	const pathname = headers().get('X-Pathname') || '';
 
-	const noNavbarRoutes = ['/', '/sign-up', '/sign-in'];
-
-	const hideNavbar = noNavbarRoutes.includes(pathname);
+	const showNavBar = postLoginRoutes.includes(pathname);
 
 	return (
 		<html lang="en">
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 			<body>
 				<ClerkProvider>
 					<div className="flex h-screen">
-						{!hideNavbar && <Navbar />}
+						{showNavBar && <Navbar />}
 						<main className="flex-1">
 							{children}
 						</main>
