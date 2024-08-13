@@ -2,7 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-const SignUpForm: React.FC = () => {
+const SignInForm: React.FC = () => {
 	return (
 		<div className="-mt-6 flex min-h-full flex-col justify-center px-6 py-12">
 			<div className="mx-auto w-full max-w-sm">
@@ -24,7 +24,7 @@ const SignUpForm: React.FC = () => {
 					<div>
 						<label
 							htmlFor="email"
-							className="block text-base font-medium leading-6 text-drexel-yellow"
+							className="block text-base font-medium leading-6 text-drexel-yellow drop-shadow-[0_0px_0.8px_rgba(255,255,255,255.8)]"
 						>
 							Email address
 						</label>
@@ -44,16 +44,17 @@ const SignUpForm: React.FC = () => {
 						<div className="flex items-center justify-between">
 							<label
 								htmlFor="password"
-								className="block text-base font-medium leading-6 text-drexel-yellow"
+								className="block text-base font-medium leading-6 text-drexel-yellow drop-shadow-[0_0px_0.8px_rgba(255,255,255,255.8)]"
 							>
 								Password
 							</label>
 							<div className="text-base">
 								<Link
 									href="#"
-									className="font-semibold text-drexel-yellow hover:text-indigo-500"
+									className="font-semibold text-drexel-yellow hover:text-indigo-500 drop-shadow-[0_0px_0.8px_rgba(255,255,255,255.8)]"
 								>
-									Forgot password?
+									Forgot
+									password?
 								</Link>
 							</div>
 						</div>
@@ -82,7 +83,7 @@ const SignUpForm: React.FC = () => {
 						Not a member?
 						<a
 							href="#"
-							className="ml-2 text-base font-semibold leading-6 transition-all text-drexel-yellow hover:text-[#fcd81e]"
+							className="ml-2 text-base font-semibold leading-6 transition-all text-drexel-yellow hover:text-[#fcd81e] drop-shadow-[0_0px_0.8px_rgba(255,255,255,255.8)]"
 						>
 							Sign Up Here
 						</a>
@@ -93,4 +94,4 @@ const SignUpForm: React.FC = () => {
 	);
 };
 
-export default SignUpForm;
+export default SignInForm;
