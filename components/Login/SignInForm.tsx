@@ -1,12 +1,46 @@
-import React from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+'use client';
+
+import React, { useState } from 'react';
+import { useSignIn } from '@clerk/nextjs';
+import { useRouter } from 'next/navigation';
 
 const SignInForm: React.FC = () => {
+	const { isLoaded, signIn, setActive } = useSignIn();
+	const [emailAddress, setEmailAddress] = useState('');
+	const [password, setPassword] = useState('');
+	const [error, setError] = useState('');
+	const router = useRouter();
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+
+		if (!isLoaded) return;
+
+		try {
+			// Attempt to sign in the user with the provided email and password
+			const result = await signIn.create({
+				identifier: emailAddress,
+				password,
+			});
+
+			// If sign-in is successful, set the active session and redirect
+			if (result.status === 'complete') {
+				await setActive({ session: result.createdSessionId });
+				router.push('/courses'); // Redirect to courses page on success
+			} else {
+				console.error('Login not completed:', result);
+				setError('Login failed. Please check your credentials and try again.');
+			}
+		} catch (err: any) {
+			console.error('Login failed:', err);
+			setError('Login failed. Please check your credentials and try again.');
+		}
+	};
+
 	return (
 		<div className="-mt-6 flex min-h-full flex-col justify-center px-6 py-12">
 			<div className="mx-auto w-full max-w-sm">
-				<Image
+				<img
 					className="mx-auto h-30 w-auto"
 					src="/seal.png"
 					alt="Drexel Seal"
@@ -18,8 +52,7 @@ const SignInForm: React.FC = () => {
 			<div className="mt-10 mx-auto w-[80%]">
 				<form
 					className="space-y-6"
-					action="#"
-					method="POST"
+					onSubmit={handleSubmit}
 				>
 					<div>
 						<label
@@ -34,6 +67,8 @@ const SignInForm: React.FC = () => {
 								name="email"
 								type="email"
 								autoComplete="email"
+								value={emailAddress}
+								onChange={(e) => setEmailAddress(e.target.value)}
 								required
 								className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-drexel-blue sm:text-base sm:leading-6"
 							/>
@@ -49,13 +84,12 @@ const SignInForm: React.FC = () => {
 								Password
 							</label>
 							<div className="text-base">
-								<Link
+								<a
 									href="#"
 									className="font-semibold text-drexel-yellow hover:text-indigo-500 drop-shadow-[0_0px_0.8px_rgba(255,255,255,255.8)]"
 								>
-									Forgot
-									password?
-								</Link>
+									Forgot password?
+								</a>
 							</div>
 						</div>
 						<div className="mt-2">
@@ -64,11 +98,15 @@ const SignInForm: React.FC = () => {
 								name="password"
 								type="password"
 								autoComplete="current-password"
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
 								required
 								className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-drexel-blue sm:text-base sm:leading-6"
 							/>
 						</div>
 					</div>
+
+					{error && <p className="text-red-500">{error}</p>}
 
 					<div>
 						<button
@@ -79,10 +117,11 @@ const SignInForm: React.FC = () => {
 						</button>
 					</div>
 
-					<p className="mt-10 text-basetext-center text-base text-gray-100">
+					<p className="mt-10 text-center text-base text-gray-100">
 						Not a member?
 						<a
 							href="#"
+							onClick={() => router.push('/signup')}
 							className="ml-2 text-base font-semibold leading-6 transition-all text-drexel-yellow hover:text-[#fcd81e] drop-shadow-[0_0px_0.8px_rgba(255,255,255,255.8)]"
 						>
 							Sign Up Here
