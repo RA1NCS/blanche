@@ -1,37 +1,37 @@
 {
-	"name": "frontend",
-	"version": "0.1.0",
-	"private": true,
-	"scripts": {
-		"predev": "npm install",
-		"dev": "next dev",
-		"build": "next build",
-		"prestart": "npm install",
-		"start": "next start",
-		"lint": "next lint",
-		"dbsetup": "psql postgresql://ssquared@blanche-postgres.c386qaeo26du.us-east-2.rds.amazonaws.com:5432/blanche-postgres -f ./lib/setup.sql",
-		"sampledb": "psql postgresql://ssquared@blanche-postgres.c386qaeo26du.us-east-2.rds.amazonaws.com:5432/blanche-postgres -f ./lib/sampledb.sql"
-	},
-	"dependencies": {
-		"@clerk/clerk-sdk-node": "^5.0.26",
-		"@clerk/nextjs": "^5.3.0",
-		"@fortawesome/fontawesome-svg-core": "^6.6.0",
-		"@fortawesome/free-solid-svg-icons": "^6.6.0",
-		"@fortawesome/react-fontawesome": "^0.2.2",
-		"@tailwindcss/forms": "^0.5.7",
-		"dotenv": "^16.4.5",
-		"next": "14.2.5",
-		"pg": "^8.12.0",
-		"react": "^18",
-		"react-dom": "^18"
-	},
-	"devDependencies": {
-		"@types/node": "^20",
-		"@types/pg": "^8.11.6",
-		"@types/react": "^18.3.3",
-		"eslint": "^8",
-		"eslint-config-next": "14.2.5",
-		"tailwindcss": "^3.4.1",
-		"typescript": "^5.5.4"
-	}
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "predev": "git pull & npm install && dotenv-vault pull",
+    "dev": "next dev",
+    "build": "next build",
+    "prestart": "git pull & npm install && npm run build && dotenv-vault pull",
+    "start": "next start",
+    "lint": "next lint",
+    "dbsetup": "psql postgresql://ssquared@blanche-postgres.c386qaeo26du.us-east-2.rds.amazonaws.com:5432/blanche-postgres -f ./lib/setup.sql",
+    "sampledb": "psql postgresql://ssquared@blanche-postgres.c386qaeo26du.us-east-2.rds.amazonaws.com:5432/blanche-postgres -f ./lib/sampledb.sql"
+  },
+  "dependencies": {
+    "@clerk/clerk-sdk-node": "^5.0.26",
+    "@clerk/nextjs": "^5.3.0",
+    "@fortawesome/fontawesome-svg-core": "^6.6.0",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@tailwindcss/forms": "^0.5.7",
+    "dotenv": "^16.4.5",
+    "next": "14.2.5",
+    "pg": "^8.12.0",
+    "react": "^18",
+    "react-dom": "^18"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/pg": "^8.11.6",
+    "@types/react": "^18.3.3",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.5",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.5.4"
+  }
 }
