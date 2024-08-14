@@ -3,8 +3,10 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
+		"predev": "npm install",
 		"dev": "next dev",
 		"build": "next build",
+		"prestart": "npm install",
 		"start": "next start",
 		"lint": "next lint",
 		"dbsetup": "psql postgresql://ssquared@blanche-postgres.c386qaeo26du.us-east-2.rds.amazonaws.com:5432/blanche-postgres -f ./lib/setup.sql",
