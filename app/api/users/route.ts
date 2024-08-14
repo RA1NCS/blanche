@@ -1,12 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { createClerkClient } from '@clerk/backend';
 
-// Example function handling GET requests
-export async function GET(request: NextRequest) {
-	return NextResponse.json({ message: 'Hello from the API!' });
-}
+const clerkClient = createClerkClient({
+	secretKey: process.env.CLERK_SECRET_KEY,
+});
 
-// Example function handling POST requests
-export async function POST(request: NextRequest) {
-	const body = await request.json();
-	return NextResponse.json({ message: 'Data received', data: body });
+export async function GET() {
+	try {
+		const users = await clerkClient.users.getUserList({ limit: 100 });
+		return NextResponse.json(users);
+	} catch (error) {
+		console.error('Error fetching user list:', error);
+		return NextResponse.json(
+			{ error: 'Failed to fetch user list' },
+			{ status: 500 }
+		);
+	}
 }

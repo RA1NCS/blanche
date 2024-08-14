@@ -1,18 +1,15 @@
-import type { Metadata } from 'next';
+'use client';
+
 import './globals.css';
-import { headers } from 'next/headers';
 import { ClerkProvider } from '@clerk/nextjs';
 import Navbar from '@/components/Navbar/Navbar';
-
-export const metadata: Metadata = {
-	title: 'Whiteboard Learn',
-	description: 'A better way to learn.',
-};
+import { usePathname } from 'next/navigation';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+	const pathname = usePathname();
+
 	const postLoginRoutes =
 		process.env.NEXT_PUBLIC_POST_LOGIN_ROUTES?.split(',') || [];
-	const pathname = headers().get('X-Pathname') || '';
 
 	const showNavBar = postLoginRoutes.includes(pathname);
 
