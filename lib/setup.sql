@@ -24,6 +24,7 @@ CREATE TABLE courses (
     course_description TEXT,
     instructor_id INT NOT NULL,
     course_image_url TEXT,
+    professor_name VARCHAR(100) NOT NULL,
     FOREIGN KEY (instructor_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
@@ -32,6 +33,7 @@ CREATE TABLE enrollments (
     enrollment_id SERIAL PRIMARY KEY,
     course_id INT NOT NULL,
     student_id INT NOT NULL,
+    section VARCHAR(10) NOT NULL,
     FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE
 );

@@ -24,6 +24,7 @@ CREATE TABLE courses (
     course_description TEXT,
     instructor_id INT NOT NULL,
     course_image_url TEXT,
+    professor_name VARCHAR(100) NOT NULL,
     FOREIGN KEY (instructor_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
@@ -32,6 +33,7 @@ CREATE TABLE enrollments (
     enrollment_id SERIAL PRIMARY KEY,
     course_id INT NOT NULL,
     student_id INT NOT NULL,
+    section VARCHAR(10) NOT NULL,
     FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
@@ -64,17 +66,17 @@ VALUES
 ('profsmith', 'profsmith@example.com', 'hashedpassword3', 'Professor', 'Smith', 'instructor', 'https://example.com/images/profsmith.jpg');
 
 -- Insert sample courses
-INSERT INTO courses (course_name, course_description, instructor_id, course_image_url)
+INSERT INTO courses (course_name, course_description, instructor_id, course_image_url, professor_name)
 VALUES
-('Introduction to Programming', 'Learn the basics of programming.', 3, 'https://example.com/images/intro_to_programming.jpg'),
-('Advanced Mathematics', 'Dive deep into advanced mathematical concepts.', 3, 'https://example.com/images/advanced_math.jpg');
+('Introduction to Programming', 'Learn the basics of programming.', 3, 'https://example.com/images/intro_to_programming.jpg', 'Professor Smith'),
+('Advanced Mathematics', 'Dive deep into advanced mathematical concepts.', 3, 'https://example.com/images/advanced_math.jpg', 'Professor Smith');
 
--- Insert sample enrollments
-INSERT INTO enrollments (course_id, student_id)
+-- Insert sample enrollments with sections
+INSERT INTO enrollments (course_id, student_id, section)
 VALUES
-(1, 1),
-(1, 2),
-(2, 1);
+(1, 1, '001'), -- John Doe in section 001 of Introduction to Programming
+(1, 2, '002'), -- Jane Doe in section 002 of Introduction to Programming
+(2, 1, '001'); -- John Doe in section 001 of Advanced Mathematics
 
 -- Insert sample assignments
 INSERT INTO assignments (course_id, title, description, due_date)
