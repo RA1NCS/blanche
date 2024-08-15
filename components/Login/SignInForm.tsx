@@ -36,7 +36,10 @@ const SignInForm: React.FC = () => {
 				);
 			}
 		} catch (err: any) {
-			console.error('Login failed:', err);
+			console.error(
+				'Login failed:',
+				err.response?.data || err.message
+			);
 			setError(
 				'Login failed. Please check your credentials and try again.'
 			);

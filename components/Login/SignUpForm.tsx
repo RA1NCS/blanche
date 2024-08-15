@@ -60,7 +60,10 @@ const SignupForm: React.FC = () => {
 				);
 			}
 		} catch (err: any) {
-			console.error('Signup failed:', err);
+			console.error(
+				'Signup failed:',
+				err.response?.data || err.message
+			);
 			setError(
 				'Signup failed. Please check your details and try again.'
 			);
