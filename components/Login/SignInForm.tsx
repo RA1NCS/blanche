@@ -87,7 +87,7 @@ const SignInForm: React.FC = () => {
 					<div className="text-base">
 						<a
 							href="#"
-							className="font-semibold text-drexel-yellow hover:text-indigo-500"
+							className="font-medium text-drexel-yellow hover:text-drexel-blue"
 						>
 							Forgot password?
 						</a>

@@ -15,6 +15,7 @@ const config: Config = {
 			fontFamily: {
 				'miller-display': ['MillerDisplay', 'serif'],
 				'miller-text': ['MillerText', 'serif'],
+				poppins: ['Poppins', 'sans-serif'],
 			},
 			backgroundImage: {
 				'gradient-radial':
