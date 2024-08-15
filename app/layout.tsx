@@ -8,11 +8,16 @@ import GlobalLayout from '@/components/Layouts/GlobalLayout';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname();
+	const pageTitle =
+		pathname.split('/')[1].charAt(0).toUpperCase() +
+		pathname.split('/')[1].slice(1);
 
 	const postLoginRoutes =
 		process.env.NEXT_PUBLIC_POST_LOGIN_ROUTES?.split(',') || [];
 
-	const showNavBar = postLoginRoutes.includes(pathname);
+	const isPostLoginPage = postLoginRoutes.some((route) =>
+		pathname.startsWith(route)
+	);
 
 	return (
 		<html lang="en">
@@ -26,10 +31,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				<ClerkProvider>
 					<GlobalLayout>
 						<div className="flex h-screen">
-							{showNavBar && <Navbar />}
-							<main className="flex-1">
-								{children}
-							</main>
+							{isPostLoginPage ? (
+								<>
+									<Navbar />
+									<main className="flex-1">
+										<div className="pt-9 px-14">
+											<h1 className="font-bold text-6xl font-miller-display text-drexel-blue">
+												{
+													pageTitle
+												}
+											</h1>
+											<hr className="w-[80%] mt-5 mb-12 -mx-3" />
+											{
+												children
+											}
+										</div>
+									</main>
+								</>
+							) : (
+								<main className="flex-1">
+									{children}
+								</main>
+							)}
 						</div>
 					</GlobalLayout>
 				</ClerkProvider>

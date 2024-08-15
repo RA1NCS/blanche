@@ -20,6 +20,7 @@ CREATE TABLE users (
 -- Courses table
 CREATE TABLE courses (
     course_id SERIAL PRIMARY KEY,
+    course_code VARCHAR(10) NOT NULL,
     course_name VARCHAR(100) NOT NULL,
     course_description TEXT,
     instructor_id INT NOT NULL,

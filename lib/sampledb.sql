@@ -17,9 +17,19 @@ CREATE TABLE users (
     profile_image_url TEXT
 );
 
+-- Insert sample users
+INSERT INTO users (username, email, password, first_name, last_name, role, profile_image_url)
+VALUES
+('johndoe', 'johndoe@example.com', 'hashedpassword1', 'John', 'Doe', 'student', 'https://example.com/images/johndoe.jpg'),
+('janedoe', 'janedoe@example.com', 'hashedpassword2', 'Jane', 'Doe', 'student', 'https://example.com/images/janedoe.jpg'),
+('profsmith', 'profsmith@example.com', 'hashedpassword3', 'Professor', 'Smith', 'instructor', 'https://example.com/images/profsmith.jpg'),
+('profjohnson', 'profjohnson@example.com', 'hashedpassword4', 'Professor', 'Johnson', 'instructor', 'https://example.com/images/profjohnson.jpg'),
+('profwilliams', 'profwilliams@example.com', 'hashedpassword5', 'Professor', 'Williams', 'instructor', 'https://example.com/images/profwilliams.jpg');
+
 -- Courses table
 CREATE TABLE courses (
     course_id SERIAL PRIMARY KEY,
+    course_code VARCHAR(10) NOT NULL,
     course_name VARCHAR(100) NOT NULL,
     course_description TEXT,
     instructor_id INT NOT NULL,
@@ -27,6 +37,16 @@ CREATE TABLE courses (
     professor_name VARCHAR(100) NOT NULL,
     FOREIGN KEY (instructor_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+
+-- Insert sample courses based on Drexel CS major classes
+INSERT INTO courses (course_code, course_name, course_description, instructor_id, course_image_url, professor_name)
+VALUES
+('CS 164', 'Introduction to Computer Science', 'An introductory course covering the basics of programming and computer science.', 3, 'https://example.com/images/intro_to_cs.jpg', 'Professor Smith'),
+('CS 172', 'Data Structures', 'Learn about fundamental data structures such as arrays, lists, trees, and graphs.', 4, 'https://example.com/images/data_structures.jpg', 'Professor Johnson'),
+('CS 240', 'Discrete Mathematics', 'An introduction to discrete mathematics and its applications in computer science.', 5, 'https://example.com/images/discrete_math.jpg', 'Professor Williams'),
+('CS 260', 'Computer Architecture', 'Study the structure and function of modern computer architectures.', 3, 'https://example.com/images/computer_architecture.jpg', 'Professor Smith'),
+('CS 270', 'Software Engineering', 'Learn the principles and practices of software engineering and project management.', 4, 'https://example.com/images/software_engineering.jpg', 'Professor Johnson'),
+('CS 283', 'Database Systems', 'An in-depth look at database design, SQL, and the management of database systems.', 5, 'https://example.com/images/database_systems.jpg', 'Professor Williams');
 
 -- Enrollments table
 CREATE TABLE enrollments (
@@ -38,6 +58,15 @@ CREATE TABLE enrollments (
     FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
+-- Insert sample enrollments with sections
+INSERT INTO enrollments (course_id, student_id, section)
+VALUES
+(1, 1, '001'), -- John Doe in section 001 of CS164
+(2, 2, '001'), -- Jane Doe in section 001 of CS172
+(3, 1, '002'), -- John Doe in section 002 of CS240
+(4, 1, '001'), -- John Doe in section 001 of CS260
+(5, 2, '002'); -- Jane Doe in section 002 of CS270
+
 -- Assignments table
 CREATE TABLE assignments (
     assignment_id SERIAL PRIMARY KEY,
@@ -47,6 +76,16 @@ CREATE TABLE assignments (
     due_date TIMESTAMP,
     FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
 );
+
+-- Insert sample assignments
+INSERT INTO assignments (course_id, title, description, due_date)
+VALUES
+(1, 'Homework 1', 'Complete the initial setup for the programming project.', '2023-08-31 23:59:59'),
+(1, 'Midterm Project', 'Build a basic software project following the course guidelines.', '2023-09-30 23:59:59'),
+(2, 'Assignment 1', 'Solve problems related to data structures and algorithms.', '2023-08-25 23:59:59'),
+(3, 'Homework 1', 'Prove theorems using discrete mathematics.', '2023-09-05 23:59:59'),
+(4, 'Lab Assignment 1', 'Write assembly code to implement given algorithms.', '2023-09-10 23:59:59'),
+(5, 'Project Proposal', 'Submit a proposal for the final software engineering project.', '2023-09-15 23:59:59');
 
 -- Grades table
 CREATE TABLE grades (
@@ -58,37 +97,11 @@ CREATE TABLE grades (
     FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
--- Insert sample users
-INSERT INTO users (username, email, password, first_name, last_name, role, profile_image_url)
-VALUES
-('johndoe', 'johndoe@example.com', 'hashedpassword1', 'John', 'Doe', 'student', 'https://example.com/images/johndoe.jpg'),
-('janedoe', 'janedoe@example.com', 'hashedpassword2', 'Jane', 'Doe', 'student', 'https://example.com/images/janedoe.jpg'),
-('profsmith', 'profsmith@example.com', 'hashedpassword3', 'Professor', 'Smith', 'instructor', 'https://example.com/images/profsmith.jpg');
-
--- Insert sample courses
-INSERT INTO courses (course_name, course_description, instructor_id, course_image_url, professor_name)
-VALUES
-('Introduction to Programming', 'Learn the basics of programming.', 3, 'https://example.com/images/intro_to_programming.jpg', 'Professor Smith'),
-('Advanced Mathematics', 'Dive deep into advanced mathematical concepts.', 3, 'https://example.com/images/advanced_math.jpg', 'Professor Smith');
-
--- Insert sample enrollments with sections
-INSERT INTO enrollments (course_id, student_id, section)
-VALUES
-(1, 1, '001'), -- John Doe in section 001 of Introduction to Programming
-(1, 2, '002'), -- Jane Doe in section 002 of Introduction to Programming
-(2, 1, '001'); -- John Doe in section 001 of Advanced Mathematics
-
--- Insert sample assignments
-INSERT INTO assignments (course_id, title, description, due_date)
-VALUES
-(1, 'Homework 1', 'Complete the programming exercises.', '2023-08-31 23:59:59'),
-(1, 'Project 1', 'Build a small web application.', '2023-09-30 23:59:59'),
-(2, 'Math Assignment 1', 'Solve the provided math problems.', '2023-08-25 23:59:59');
-
 -- Insert sample grades
 INSERT INTO grades (assignment_id, student_id, grade)
 VALUES
 (1, 1, 95.5),
-(1, 2, 88.0),
-(2, 1, 92.0),
-(3, 1, 85.0);
+(2, 2, 88.0),
+(3, 1, 92.0),
+(4, 1, 85.0),
+(5, 2, 90.0);
