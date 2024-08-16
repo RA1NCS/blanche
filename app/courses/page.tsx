@@ -17,14 +17,25 @@ export default function CoursesPage() {
 		[course: string]: AssignmentDisplay[];
 	}>({});
 
+	// Fetch courses on component mount
 	useEffect(() => {
 		async function fetchCourses() {
-			const res = await fetch('/api/courses');
-			const data = await res.json();
+			try {
+				const res = await fetch('/api/courses');
+				const data = await res.json();
+				console.log('Courses data:', data);
 
-			setCourses(data);
+				setCourses(data); // Set the courses state
+			} catch (error) {
+				console.error('Failed to fetch courses:', error);
+			}
 		}
 
+		fetchCourses(); // Trigger fetching courses on component mount
+	}, []);
+
+	// Fetch assignments once courses are loaded
+	useEffect(() => {
 		async function fetchAllAssignments() {
 			const assignmentsMap: { [course: string]: AssignmentDisplay[] } = {};
 			for (const course of courses) {
@@ -35,11 +46,11 @@ export default function CoursesPage() {
 					dueDate: new Date(assignment.due_date).toLocaleDateString(),
 				}));
 			}
-			setAllAssignments(assignmentsMap);
+			setAllAssignments(assignmentsMap); // Set the allAssignments state
 		}
 
 		if (courses.length > 0) {
-			fetchAllAssignments();
+			fetchAllAssignments(); // Trigger fetching assignments only after courses are loaded
 		}
 	}, [courses]);
 
@@ -47,7 +58,7 @@ export default function CoursesPage() {
 		setSelectedCourse(course);
 		const res = await fetch(`/api/courses/${course.course_id}/assignments`);
 		const data: Assignment[] = await res.json();
-		setAssignments(data);
+		setAssignments(data); // Set the assignments state for the selected course
 		setIsModalOpen(true);
 		setIsRightBarVisible(true); // Show right bar when course is selected
 	};
