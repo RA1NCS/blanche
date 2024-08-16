@@ -1,97 +1,94 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-// Define the Course Type
-interface Course {
-	course_id: number;
-	course_code: string;
-	course_name: string;
-	course_description: string;
-	instructor_id: number;
-	course_image_url: string;
-	professor_name: string;
-}
+import { useState, useEffect } from 'react';
+import CourseGrid from '@/components/Courses/CourseGrid';
+import CourseModal from '@/components/Courses/CourseModal';
+import RightBar from '@/components/RightBar';
+import { Course, Assignment, AssignmentDisplay } from '@/lib/interfaces';
 
 export default function CoursesPage() {
 	const [courses, setCourses] = useState<Course[]>([]);
-	const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
+	const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+	const [assignments, setAssignments] = useState<Assignment[]>([]);
+	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+	const [isRightBarVisible, setIsRightBarVisible] = useState<boolean>(false);
 	const [searchQuery, setSearchQuery] = useState<string>('');
+	const [allAssignments, setAllAssignments] = useState<{
+		[course: string]: AssignmentDisplay[];
+	}>({});
 
 	useEffect(() => {
 		async function fetchCourses() {
 			const res = await fetch('/api/courses');
 			const data = await res.json();
+
 			setCourses(data);
 		}
 
-		fetchCourses();
-	}, []);
+		async function fetchAllAssignments() {
+			const assignmentsMap: { [course: string]: AssignmentDisplay[] } = {};
+			for (const course of courses) {
+				const res = await fetch(`/api/courses/${course.course_id}/assignments`);
+				const data: Assignment[] = await res.json();
+				assignmentsMap[course.course_name] = data.map((assignment: Assignment) => ({
+					title: assignment.title,
+					dueDate: new Date(assignment.due_date).toLocaleDateString(),
+				}));
+			}
+			setAllAssignments(assignmentsMap);
+		}
 
-	const filteredCourses = courses.filter(
-		(course) =>
-			course.course_name
-				.toLowerCase()
-				.includes(searchQuery.toLowerCase()) ||
-			course.course_code
-				.toLowerCase()
-				.includes(searchQuery.toLowerCase())
-	);
+		if (courses.length > 0) {
+			fetchAllAssignments();
+		}
+	}, [courses]);
+
+	const handleCourseClick = async (course: Course) => {
+		setSelectedCourse(course);
+		const res = await fetch(`/api/courses/${course.course_id}/assignments`);
+		const data: Assignment[] = await res.json();
+		setAssignments(data);
+		setIsModalOpen(true);
+		setIsRightBarVisible(true); // Show right bar when course is selected
+	};
+
+	const handleCloseModal = () => {
+		setIsModalOpen(false);
+		setSelectedCourse(null);
+		setAssignments([]);
+		setIsRightBarVisible(false); // Hide the bar after closing the modal
+	};
 
 	return (
-		<div className="mt-0">
-			{/* Search Bar */}
-			<div className="w-full mb-8">
-				<input
-					type="text"
-					placeholder="Search courses..."
-					value={searchQuery}
-					onChange={(e) =>
-						setSearchQuery(e.target.value)
-					}
-					className="w-full h-12 px-6 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+		<div className="flex">
+			{/* Main Content */}
+			<div className="flex-grow">
+				<CourseGrid
+					courses={courses}
+					onCourseClick={handleCourseClick}
+					searchQuery={searchQuery}
+					setSearchQuery={setSearchQuery}
+				/>
+				<CourseModal
+					isModalOpen={isModalOpen}
+					selectedCourse={selectedCourse}
+					assignments={assignments}
+					onClose={handleCloseModal}
 				/>
 			</div>
 
-			{/* Courses Grid */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 py-8 px-6 rounded-3xl border border-gray-300 ">
-				{filteredCourses.map((course) => (
-					<div
-						key={course.course_id}
-						className="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200"
-					>
-						<img
-							src={course.course_image_url}
-							alt={course.course_name}
-							className="w-full h-48 object-cover"
-						/>
-						<div className="p-4">
-							<h2 className="text-2xl font-bold mb-2">
-								{course.course_code}
-							</h2>
-							<h2 className="text-xl font-medium mb-2">
-								{course.course_name}
-							</h2>
-							<p className="text-gray-700 mb-1">
-								{
-									course.professor_name
-								}
-							</p>
-						</div>
-					</div>
-				))}
-
-				{selectedCourse && (
-					<div>
-						{/* Render assignments for the selected course here */}
-						<p>
-							Assignments for course ID:{' '}
-							{selectedCourse}
-						</p>
-						{/* Add additional logic to fetch and display assignments */}
-					</div>
-				)}
-			</div>
+			{/* Right Side Bar */}
+			<RightBar
+				isVisible={isRightBarVisible}
+				setIsVisible={setIsRightBarVisible}
+				courseName={selectedCourse?.course_name}
+				courseCode={selectedCourse?.course_code}
+				assignments={assignments.map((assignment) => ({
+					title: assignment.title,
+					dueDate: new Date(assignment.due_date).toLocaleDateString(),
+				}))}
+				allAssignments={allAssignments}
+			/>
 		</div>
 	);
 }
