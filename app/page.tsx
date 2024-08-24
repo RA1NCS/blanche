@@ -35,7 +35,7 @@ export default function LoginPage() {
 						Drexel Learn
 					</h1>
 					<p className="text-4xl text-drexel-yellow font-futura-medium mt-4">
-						AMBITION CAN'T WAIT
+						AMBITION CAN&apos;T WAIT
 					</p>
 				</div>
 				<div className="p-8 pb-0 -bottom-6 flex justify-center relative z-10">
