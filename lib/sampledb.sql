@@ -41,12 +41,12 @@ CREATE TABLE courses (
 -- Insert sample courses based on Drexel CS major classes
 INSERT INTO courses (course_code, course_name, course_description, instructor_id, course_image_url, professor_name)
 VALUES
-('CS 164', 'Introduction to Computer Science', 'An introductory course covering the basics of programming and computer science.', 3, 'https://example.com/images/intro_to_cs.jpg', 'Professor Smith'),
-('CS 172', 'Data Structures', 'Learn about fundamental data structures such as arrays, lists, trees, and graphs.', 4, 'https://example.com/images/data_structures.jpg', 'Professor Johnson'),
-('CS 240', 'Discrete Mathematics', 'An introduction to discrete mathematics and its applications in computer science.', 5, 'https://example.com/images/discrete_math.jpg', 'Professor Williams'),
-('CS 260', 'Computer Architecture', 'Study the structure and function of modern computer architectures.', 3, 'https://example.com/images/computer_architecture.jpg', 'Professor Smith'),
-('CS 270', 'Software Engineering', 'Learn the principles and practices of software engineering and project management.', 4, 'https://example.com/images/software_engineering.jpg', 'Professor Johnson'),
-('CS 283', 'Database Systems', 'An in-depth look at database design, SQL, and the management of database systems.', 5, 'https://example.com/images/database_systems.jpg', 'Professor Williams');
+('CS 164', 'Introduction to Computer Science', 'An introductory course covering the basics of programming and computer science.', 3, 'https://cdn.vectorstock.com/i/500p/31/88/horizontal-banner-with-hands-typing-on-computer-vector-20863188.jpg', 'Professor Smith'),
+('CS 172', 'Data Structures', 'Learn about fundamental data structures such as arrays, lists, trees, and graphs.', 4, 'https://cdn.vectorstock.com/i/500p/31/88/horizontal-banner-with-hands-typing-on-computer-vector-20863188.jpg', 'Professor Johnson'),
+('CS 240', 'Discrete Mathematics', 'An introduction to discrete mathematics and its applications in computer science.', 5, 'https://cdn.vectorstock.com/i/500p/31/88/horizontal-banner-with-hands-typing-on-computer-vector-20863188.jpg', 'Professor Williams'),
+('CS 260', 'Computer Architecture', 'Study the structure and function of modern computer architectures.', 3, 'https://cdn.vectorstock.com/i/500p/31/88/horizontal-banner-with-hands-typing-on-computer-vector-20863188.jpg', 'Professor Smith'),
+('CS 270', 'Software Engineering', 'Learn the principles and practices of software engineering and project management.', 4, 'https://cdn.vectorstock.com/i/500p/31/88/horizontal-banner-with-hands-typing-on-computer-vector-20863188.jpg', 'Professor Johnson'),
+('CS 283', 'Database Systems', 'An in-depth look at database design, SQL, and the management of database systems.', 5, 'https://cdn.vectorstock.com/i/500p/31/88/horizontal-banner-with-hands-typing-on-computer-vector-20863188.jpg', 'Professor Williams');
 
 -- Enrollments table
 CREATE TABLE enrollments (
