@@ -1,7 +1,7 @@
 import { Course, Assignment } from '@/lib/interfaces';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faUpload, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
 
 interface CourseModalProps {
 	isModalOpen: boolean;
@@ -18,6 +18,10 @@ export default function CourseModal({
 	onClose,
 	onBackToCourse,
 }: CourseModalProps) {
+	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+	const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+	const [textSubmission, setTextSubmission] = useState<string>('');
+
 	// Handle body scroll lock when modal is open
 	useEffect(() => {
 		if (isModalOpen) {
@@ -28,6 +32,51 @@ export default function CourseModal({
 	}, [isModalOpen]);
 
 	if (!isModalOpen || !selectedCourse) return null;
+
+	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const files = Array.from(event.target.files || []);
+		setSelectedFiles((prevFiles) => [...prevFiles, ...files]);
+		setUploadStatus(null); // Reset upload status when a new file is selected
+	};
+
+	const handleUpload = async () => {
+		if (selectedFiles.length > 0 || textSubmission.trim() !== '') {
+			const formData = new FormData();
+			selectedFiles.forEach((file) => {
+				formData.append('files', file);
+			});
+			formData.append(
+				'assignmentId',
+				selectedAssignment?.assignment_id.toString() || ''
+			);
+			formData.append('textSubmission', textSubmission);
+
+			try {
+				const response = await fetch(
+					'/api/assignments/upload',
+					{
+						method: 'POST',
+						body: formData,
+					}
+				);
+
+				if (response.ok) {
+					setUploadStatus('Submission successful');
+				} else {
+					setUploadStatus('Failed to submit');
+				}
+			} catch (error) {
+				console.error('Error uploading files:', error);
+				setUploadStatus('Error uploading files');
+			}
+		}
+	};
+
+	const handleDeleteFile = (fileIndex: number) => {
+		setSelectedFiles((prevFiles) =>
+			prevFiles.filter((_, index) => index !== fileIndex)
+		);
+	};
 
 	return (
 		<>
@@ -76,51 +125,40 @@ export default function CourseModal({
 					</div>
 
 					{/* Content Area */}
-					<div className="flex-1 p-8 overflow-y-auto">
-						<button
-							className="absolute top-8 right-8 text-gray-500 hover:text-gray-700 z-10 text-lg"
-							onClick={onClose}
-						>
-							<FontAwesomeIcon
-								icon={faTimes}
-							/>
-						</button>
+					{selectedAssignment ? (
+						<div className="flex-1 flex">
+							{/* Left Side: Assignment Instructions */}
+							<div className="w-1/2 p-8 overflow-y-auto border-r border-gray-300 flex flex-col justify-between">
+								<button
+									className="absolute top-8 right-8 text-gray-500 hover:text-gray-700 z-10 text-lg"
+									onClick={
+										onClose
+									}
+								>
+									<FontAwesomeIcon
+										icon={
+											faTimes
+										}
+									/>
+								</button>
 
-						{selectedAssignment ? (
-							<div
-								className="transition-transform duration-500 ml-8 mt-8 ease-in-out transform flex flex-col justify-between h-full"
-								style={{
-									transform: 'translateX(0)',
-								}}
-							>
 								<div>
-									<h2 className="text-3xl font-bold mb-4">
+									<h2 className="text-6xl font-bold mb-6">
 										{
-											selectedAssignment.title
+											selectedAssignment?.title
 										}
 									</h2>
-									<h3 className="text-xl font-semibold mb-4">
+									<p className="mt-2 text-lg mb-4">
 										{
-											selectedCourse.course_name
+											selectedAssignment?.description
 										}
-									</h3>
-									<p className="text-lg mb-4">
-										{
-											selectedAssignment.description
-										}
-									</p>
-									<p className="text-lg mb-4 text-gray-700">
-										Due:{' '}
-										{new Date(
-											selectedAssignment.due_date
-										).toLocaleDateString()}
 									</p>
 								</div>
 
-								{/* Back to Course Overview Button */}
-								<div className="mt-auto mb-10">
+								{/* Due Date */}
+								<div className="flex justify-between items-center mt-auto">
 									<button
-										className="text-drexel-blue transition-all hover:text-blue-700"
+										className="text-drexel-blue text-xl transition-all hover:text-blue-700"
 										onClick={
 											onBackToCourse
 										}
@@ -131,14 +169,154 @@ export default function CourseModal({
 										Course
 										Overview
 									</button>
+									<p className="text-xl text-gray-700">
+										Due:{' '}
+										{selectedAssignment?.due_date
+											? new Date(
+													selectedAssignment.due_date
+											  ).toLocaleDateString()
+											: 'No due date available'}
+									</p>
 								</div>
 							</div>
-						) : (
-							<div className="flex justify-center items-center h-full text-2xl text-gray-500">
-								No assignment open
+
+							{/* Right Side: Submission Area */}
+							<div className="w-1/2 p-8 pt-0 overflow-y-auto flex flex-col">
+								<div className="mt-8">
+									<h1 className="text-6xl font-bold mb-4">
+										Your
+										Submission
+									</h1>
+
+									{/* Text Submission Area */}
+									<textarea
+										className="w-full max-w-xl p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+										placeholder="Type your submission here..."
+										value={
+											textSubmission
+										}
+										onChange={(
+											e
+										) =>
+											setTextSubmission(
+												e
+													.target
+													.value
+											)
+										}
+										rows={
+											4
+										}
+										style={{
+											overflowY: 'hidden',
+										}}
+										onInput={(
+											e
+										) => {
+											const target =
+												e.target as HTMLTextAreaElement;
+											target.style.height =
+												'auto';
+											target.style.height = `${target.scrollHeight}px`;
+										}}
+									></textarea>
+
+									{/* Display Selected Files */}
+									<div className="flex flex-col space-y-2 mt-4">
+										{selectedFiles.map(
+											(
+												file,
+												index
+											) => (
+												<div
+													key={
+														index
+													}
+													className="flex items-center justify-between w-full max-w-xl px-4 py-3 border border-gray-300 rounded-full bg-gray-200"
+												>
+													<span className="text-gray-700 truncate">
+														{
+															file.name
+														}
+													</span>
+													<button
+														className="text-red-600 hover:text-red-800 transition-all hover:bg-gray-300 hover:rounded-full p-2"
+														onClick={() =>
+															handleDeleteFile(
+																index
+															)
+														}
+													>
+														<FontAwesomeIcon
+															icon={
+																faTrashAlt
+															}
+														/>
+													</button>
+												</div>
+											)
+										)}
+									</div>
+
+									{/* Upload and Submit Buttons */}
+									<div className="flex items-center space-x-4 mt-4">
+										<label className="relative cursor-pointer px-4 py-3 hover:bg-gray-300 transition-all ease-in-out duration-500 rounded-full flex items-center justify-center bg-gray-100 border border-gray-300">
+											Upload
+											Files
+											<FontAwesomeIcon
+												icon={
+													faUpload
+												}
+												className="ml-3 text-gray-600"
+											/>
+											<input
+												type="file"
+												onChange={
+													handleFileChange
+												}
+												className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+												multiple
+											/>
+										</label>
+										{(selectedFiles.length >
+											0 ||
+											textSubmission.trim() !==
+												'') && (
+											<button
+												onClick={
+													handleUpload
+												}
+												className="bg-drexel-blue text-white px-4 py-3 rounded-full shadow hover:bg-drexel-blue-darker transition"
+											>
+												Submit
+											</button>
+										)}
+									</div>
+									{uploadStatus && (
+										<p className="mt-2 text-sm text-gray-500">
+											{
+												uploadStatus
+											}
+										</p>
+									)}
+								</div>
 							</div>
-						)}
-					</div>
+						</div>
+					) : (
+						/* Display Course Code and Name if No Assignment is Selected */
+						<div className="flex-1 flex flex-col justify-center items-center text-center">
+							<h2 className="text-6xl font-bold">
+								{
+									selectedCourse.course_code
+								}
+							</h2>
+							<p className="text-2xl text-gray-600 mt-4">
+								{
+									selectedCourse.course_name
+								}
+							</p>
+						</div>
+					)}
 				</div>
 			</div>
 		</>

@@ -10,6 +10,7 @@ const config: Config = {
 		extend: {
 			colors: {
 				'drexel-blue': '#002F6C',
+				'drexel-blue-darker': '#011B3D',
 				'drexel-yellow': '#F2CA00',
 			},
 			fontFamily: {
