@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server';
 import { clerkClient, currentUser } from '@clerk/nextjs/server';
-import fs from 'fs';
-import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+import streamifier from 'streamifier';
+
+cloudinary.config({
+	cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+	api_key: process.env.CLOUDINARY_API_KEY,
+	api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(request: Request) {
 	const data = await request.formData();
@@ -16,25 +22,43 @@ export async function POST(request: Request) {
 	}
 
 	const buffer = Buffer.from(await file.arrayBuffer());
-	const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
 
-	if (!fs.existsSync(uploadsDir)) {
-		fs.mkdirSync(uploadsDir, { recursive: true });
+	try {
+		const uploadResult = await new Promise<{ secure_url: string }>(
+			(resolve, reject) => {
+				const uploadStream =
+					cloudinary.uploader.upload_stream(
+						{ folder: 'user_profile_images' }, // You can customize the folder
+						(error, result) => {
+							if (result) {
+								resolve(result);
+							} else {
+								reject(error);
+							}
+						}
+					);
+
+				streamifier
+					.createReadStream(buffer)
+					.pipe(uploadStream);
+			}
+		);
+
+		const imageUrl = uploadResult.secure_url;
+
+		// Update user metadata with the image URL using clerkClient
+		await clerkClient.users.updateUser(user.id, {
+			unsafeMetadata: {
+				profile_image_url: imageUrl,
+			},
+		});
+
+		return NextResponse.json({ imageUrl });
+	} catch (error) {
+		console.error('Error uploading to Cloudinary:', error);
+		return NextResponse.json(
+			{ error: 'Failed to upload image' },
+			{ status: 500 }
+		);
 	}
-
-	const fileName = `${user.id}-${Date.now()}-${file.name}`;
-	const filePath = path.join(uploadsDir, fileName);
-
-	fs.writeFileSync(filePath, buffer);
-
-	const imageUrl = `/uploads/${fileName}`;
-
-	// Update user metadata with the image URL using clerkClient
-	await clerkClient.users.updateUser(user.id, {
-		unsafeMetadata: {
-			profile_image_url: imageUrl,
-		},
-	});
-
-	return NextResponse.json({ imageUrl });
 }
