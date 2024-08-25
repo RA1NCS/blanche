@@ -13,6 +13,7 @@ export default function UserProfile() {
 	const [profileImage, setProfileImage] = useState('/user-image.png');
 	const [isDefaultImage, setIsDefaultImage] = useState(true);
 	const [showOptions, setShowOptions] = useState(false);
+	const [optionsVisible, setOptionsVisible] = useState(false);
 
 	// Fetch full name and username
 	useEffect(() => {
@@ -37,7 +38,7 @@ export default function UserProfile() {
 				// Fetch the profile image URL from metadata
 				const metadataResponse = await fetch(
 					'/api/users/curMetadata'
-				); // This route now exists
+				);
 				if (metadataResponse.ok) {
 					const metadata =
 						await metadataResponse.json();
@@ -58,8 +59,20 @@ export default function UserProfile() {
 		fetchUserData();
 	}, []);
 
-	// Handle image click to toggle options
-	const handleImageClick = () => setShowOptions((prev) => !prev);
+	// Handle image click to toggle options with a delay
+	const handleImageClick = () => {
+		if (!showOptions) {
+			setShowOptions(true);
+			setTimeout(() => {
+				setOptionsVisible(true);
+			}, 50); // Delay before making the options visible
+		} else {
+			setOptionsVisible(false);
+			setTimeout(() => {
+				setShowOptions(false);
+			}, 300); // Delay before hiding the options completely
+		}
+	};
 
 	// Handle file upload
 	const handleFileChange = async (
@@ -82,6 +95,7 @@ export default function UserProfile() {
 					setProfileImage(imageUrl);
 					setIsDefaultImage(false);
 					setShowOptions(false);
+					setOptionsVisible(false);
 				} else {
 					console.error('Failed to upload image');
 				}
@@ -105,6 +119,7 @@ export default function UserProfile() {
 				setProfileImage('/user-image.png');
 				setIsDefaultImage(true);
 				setShowOptions(false);
+				setOptionsVisible(false);
 			} else {
 				console.error('Failed to delete profile picture');
 			}
@@ -137,13 +152,17 @@ export default function UserProfile() {
 						<div
 							className={`absolute ${
 								!isDefaultImage
-									? `-top-32`
-									: `-top-20`
-							} mt-2 w-12 bg-white bg-opacity-90 backdrop-blur-lg border rounded-lg shadow-lg z-50 p-2 transition-opacity duration-300 ease-in-out`}
+									? '-top-32'
+									: '-top-20'
+							} mt-2 w-full flex flex-col items-center space-y-2 transition-all duration-300 ease-in-out ${
+								optionsVisible
+									? 'translate-y-0 opacity-100'
+									: 'translate-y-5 opacity-0'
+							}`}
 						>
 							{!isDefaultImage && (
 								<button
-									className="block w-full text-left text-red-600 hover:bg-red-50 p-2 rounded-lg flex items-center"
+									className="w-10 h-10 p-2 flex items-center justify-center rounded-full bg-gray-200 bg-opacity-40 backdrop-blur-lg transition-transform duration-300 hover:bg-gray-300"
 									onClick={
 										handleDeleteProfilePicture
 									}
@@ -152,14 +171,14 @@ export default function UserProfile() {
 										icon={
 											faTrashAlt
 										}
-										className="mr-9"
+										className="text-red-800"
 									/>
 								</button>
 							)}
-							<label className="block w-full text-left p-2 rounded-lg flex items-center hover:bg-gray-100 cursor-pointer text-gray-600">
+							<label className="w-10 h-10 p-2 flex items-center justify-center rounded-full bg-gray-200 bg-opacity-40 backdrop-blur-lg transition-transform duration-300 hover:bg-gray-300 cursor-pointer">
 								<FontAwesomeIcon
 									icon={faEdit}
-									className="mr-14"
+									className="text-drexel-blue"
 								/>
 								<input
 									type="file"
