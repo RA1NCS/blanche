@@ -33,6 +33,21 @@ export default function UserProfile() {
 					throw new Error('Failed to fetch username');
 				const usernameData = await usernameResponse.json();
 				setUsername(usernameData.username || 'No Username');
+
+				// Fetch the profile image URL from metadata
+				const metadataResponse = await fetch(
+					'/api/users/curMetadata'
+				); // This route now exists
+				if (metadataResponse.ok) {
+					const metadata =
+						await metadataResponse.json();
+					if (metadata.profile_image_url) {
+						setProfileImage(
+							metadata.profile_image_url
+						);
+						setIsDefaultImage(false);
+					}
+				}
 			} catch (error) {
 				console.error(error);
 				setFullName('Error loading name');
@@ -47,26 +62,55 @@ export default function UserProfile() {
 	const handleImageClick = () => setShowOptions((prev) => !prev);
 
 	// Handle file upload
-	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+	const handleFileChange = async (
+		event: React.ChangeEvent<HTMLInputElement>
+	) => {
 		const file = event.target.files?.[0];
 		if (file) {
-			const reader = new FileReader();
-			reader.onloadend = () => {
-				if (typeof reader.result === 'string') {
-					setProfileImage(reader.result);
+			const formData = new FormData();
+			formData.append('file', file);
+			formData.append('userId', 'current'); // Assuming the user ID is handled server-side
+
+			try {
+				const response = await fetch('/api/users/upload', {
+					method: 'POST',
+					body: formData,
+				});
+
+				if (response.ok) {
+					const { imageUrl } = await response.json();
+					setProfileImage(imageUrl);
 					setIsDefaultImage(false);
 					setShowOptions(false);
+				} else {
+					console.error('Failed to upload image');
 				}
-			};
-			reader.readAsDataURL(file);
+			} catch (error) {
+				console.error('Error uploading image:', error);
+			}
 		}
 	};
 
 	// Handle delete profile picture
-	const handleDeleteProfilePicture = () => {
-		setProfileImage('/user-image.png');
-		setIsDefaultImage(true);
-		setShowOptions(false);
+	const handleDeleteProfilePicture = async () => {
+		try {
+			const response = await fetch(
+				'/api/users/deleteProfileImage',
+				{
+					method: 'POST',
+				}
+			);
+
+			if (response.ok) {
+				setProfileImage('/user-image.png');
+				setIsDefaultImage(true);
+				setShowOptions(false);
+			} else {
+				console.error('Failed to delete profile picture');
+			}
+		} catch (error) {
+			console.error('Error deleting profile picture:', error);
+		}
 	};
 
 	return (
@@ -93,21 +137,13 @@ export default function UserProfile() {
 						<div
 							className={`absolute ${
 								!isDefaultImage
-									? '-top-32'
-									: '-top-20'
-							} w-full flex flex-col items-center space-y-2 transition-all duration-500 ease-in-out delay-150`}
-							style={{
-								transform: showOptions
-									? 'translateY(0)'
-									: 'translateY(20px)',
-								opacity: showOptions
-									? 1
-									: 0,
-							}}
+									? `-top-32`
+									: `-top-20`
+							} mt-2 w-12 bg-white bg-opacity-90 backdrop-blur-lg border rounded-lg shadow-lg z-50 p-2 transition-opacity duration-300 ease-in-out`}
 						>
 							{!isDefaultImage && (
 								<button
-									className="w-10 h-10 p-2 flex items-center justify-center rounded-lg bg-gray-200 bg-opacity-40 backdrop-blur-sm transition-all duration-300 hover:bg-gray-300"
+									className="block w-full text-left text-red-600 hover:bg-red-50 p-2 rounded-lg flex items-center"
 									onClick={
 										handleDeleteProfilePicture
 									}
@@ -116,14 +152,14 @@ export default function UserProfile() {
 										icon={
 											faTrashAlt
 										}
-										className="text-red-600"
+										className="mr-9"
 									/>
 								</button>
 							)}
-							<label className="w-10 h-10 p-2 flex items-center justify-center rounded-lg bg-gray-200 bg-opacity-40 backdrop-blur-sm transition-all duration-300 hover:bg-gray-300 cursor-pointer">
+							<label className="block w-full text-left p-2 rounded-lg flex items-center hover:bg-gray-100 cursor-pointer text-gray-600">
 								<FontAwesomeIcon
 									icon={faEdit}
-									className="text-gray-600"
+									className="mr-14"
 								/>
 								<input
 									type="file"
