@@ -8,16 +8,17 @@ export async function GET(
 	const { courseId } = params;
 
 	try {
-		const res = await db.query(
+		const result = await db.query(
 			'SELECT * FROM assignments WHERE course_id = $1',
 			[courseId]
 		);
-		return NextResponse.json(res.rows);
+
+		return NextResponse.json(result.rows);
 	} catch (error) {
-		console.error(
-			`Error fetching assignments for course ${courseId}:`,
-			error
+		console.error('Error fetching assignments:', error);
+		return NextResponse.json(
+			{ error: 'Failed to fetch assignments' },
+			{ status: 500 }
 		);
-		return NextResponse.error();
 	}
 }

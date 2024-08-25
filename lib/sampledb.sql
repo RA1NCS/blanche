@@ -1,5 +1,6 @@
 -- Drop existing tables if they exist
 DROP TABLE IF EXISTS grades;
+DROP TABLE IF EXISTS student_submissions;
 DROP TABLE IF EXISTS assignments;
 DROP TABLE IF EXISTS enrollments;
 DROP TABLE IF EXISTS courses;
@@ -89,24 +90,13 @@ VALUES
 (4, 'Lab Assignment 1', 'Write assembly code to implement given algorithms.', '2023-09-10 23:59:59'),
 (5, 'Project Proposal', 'Submit a proposal for the final software engineering project.', '2023-09-15 23:59:59');
 
--- Grades table
+-- Student Submissions table
 CREATE TABLE student_submissions (
     submission_id SERIAL PRIMARY KEY,
     assignment_id INT NOT NULL,
-    student_id INT NOT NULL,
+    student_id TEXT NOT NULL, -- Changed to TEXT to store Clerk user IDs
     submission_text TEXT,
     submission_file_url TEXT,
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (assignment_id) REFERENCES assignments(assignment_id) ON DELETE CASCADE,
-    FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE
+    FOREIGN KEY (assignment_id) REFERENCES assignments(assignment_id) ON DELETE CASCADE
 );
-
-
--- Insert sample grades
-INSERT INTO grades (assignment_id, student_id, grade)
-VALUES
-(1, 1, 95.5),
-(2, 2, 88.0),
-(3, 1, 92.0),
-(4, 1, 85.0),
-(5, 2, 90.0);

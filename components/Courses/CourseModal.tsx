@@ -21,6 +21,7 @@ export default function CourseModal({
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 	const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 	const [textSubmission, setTextSubmission] = useState<string>('');
+	const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
 	// Handle body scroll lock when modal is open
 	useEffect(() => {
@@ -30,6 +31,37 @@ export default function CourseModal({
 			document.body.style.overflow = 'auto';
 		}
 	}, [isModalOpen]);
+
+	useEffect(() => {
+		async function checkSubmission() {
+			if (selectedAssignment) {
+				console.log(
+					'Checking submission for assignment:',
+					selectedAssignment.assignment_id
+				);
+				try {
+					const response = await fetch(
+						`/api/assignments/${selectedAssignment.assignment_id}/submissions/check`
+					);
+					const data = await response.json();
+					console.log(
+						'Submission check result:',
+						data
+					);
+					setHasSubmitted(data.hasSubmitted);
+				} catch (error) {
+					console.error(
+						'Error fetching submission status:',
+						error
+					);
+				}
+			}
+		}
+
+		if (selectedAssignment) {
+			checkSubmission();
+		}
+	}, [selectedAssignment]);
 
 	if (!isModalOpen || !selectedCourse) return null;
 
@@ -43,13 +75,13 @@ export default function CourseModal({
 		if (selectedFiles.length > 0 || textSubmission.trim() !== '') {
 			const formData = new FormData();
 			selectedFiles.forEach((file) => {
-				formData.append('files', file);
+				formData.append('file', file);
 			});
 			formData.append(
 				'assignmentId',
 				selectedAssignment?.assignment_id.toString() || ''
 			);
-			formData.append('textSubmission', textSubmission);
+			formData.append('submissionText', textSubmission);
 
 			try {
 				const response = await fetch(
@@ -60,10 +92,15 @@ export default function CourseModal({
 					}
 				);
 
+				const result = await response.json();
+
 				if (response.ok) {
 					setUploadStatus('Submission successful');
+					setHasSubmitted(true); // Prevent further submissions
 				} else {
-					setUploadStatus('Failed to submit');
+					setUploadStatus(
+						result.error || 'Failed to submit'
+					);
 				}
 			} catch (error) {
 				console.error('Error uploading files:', error);
@@ -169,7 +206,7 @@ export default function CourseModal({
 										Course
 										Overview
 									</button>
-									<p className="text-xl text-gray-700">
+									<p className="text-lg text-gray-600">
 										Due:{' '}
 										{selectedAssignment?.due_date
 											? new Date(
@@ -189,114 +226,134 @@ export default function CourseModal({
 									</h1>
 
 									{/* Text Submission Area */}
-									<textarea
-										className="w-full max-w-xl p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-										placeholder="Type your submission here..."
-										value={
-											textSubmission
-										}
-										onChange={(
-											e
-										) =>
-											setTextSubmission(
-												e
-													.target
-													.value
-											)
-										}
-										rows={
-											4
-										}
-										style={{
-											overflowY: 'hidden',
-										}}
-										onInput={(
-											e
-										) => {
-											const target =
-												e.target as HTMLTextAreaElement;
-											target.style.height =
-												'auto';
-											target.style.height = `${target.scrollHeight}px`;
-										}}
-									></textarea>
+									{!hasSubmitted ? (
+										<>
+											<textarea
+												className="w-full max-w-xl p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+												placeholder="Type your submission here..."
+												value={
+													textSubmission
+												}
+												onChange={(
+													e
+												) =>
+													setTextSubmission(
+														e
+															.target
+															.value
+													)
+												}
+												rows={
+													4
+												}
+												style={{
+													overflowY: 'hidden',
+												}}
+												onInput={(
+													e
+												) => {
+													const target =
+														e.target as HTMLTextAreaElement;
+													target.style.height =
+														'auto';
+													target.style.height = `${target.scrollHeight}px`;
+												}}
+											></textarea>
 
-									{/* Display Selected Files */}
-									<div className="flex flex-col space-y-2 mt-4">
-										{selectedFiles.map(
-											(
-												file,
-												index
-											) => (
-												<div
-													key={
+											{/* Display Selected Files */}
+											<div className="flex flex-col space-y-2 mt-4">
+												{selectedFiles.map(
+													(
+														file,
 														index
-													}
-													className="flex items-center justify-between w-full max-w-xl px-4 py-3 border border-gray-300 rounded-full bg-gray-200"
-												>
-													<span className="text-gray-700 truncate">
-														{
-															file.name
-														}
-													</span>
-													<button
-														className="text-red-600 hover:text-red-800 transition-all hover:bg-gray-300 hover:rounded-full p-2"
-														onClick={() =>
-															handleDeleteFile(
+													) => (
+														<div
+															key={
 																index
-															)
-														}
-													>
-														<FontAwesomeIcon
-															icon={
-																faTrashAlt
 															}
-														/>
-													</button>
-												</div>
-											)
-										)}
-									</div>
+															className="flex items-center justify-between w-full max-w-xl px-4 py-2 border border-gray-300 rounded-full bg-gray-200"
+														>
+															<span className="text-gray-700 truncate">
+																{
+																	file.name
+																}
+															</span>
+															<button
+																className="text-red-600 hover:text-red-800 transition-all hover:bg-gray-300 hover:rounded-full p-2 py-0"
+																onClick={() =>
+																	handleDeleteFile(
+																		index
+																	)
+																}
+															>
+																<FontAwesomeIcon
+																	icon={
+																		faTrashAlt
+																	}
+																	className="py-3 px-1 flex justify-center align-middle"
+																/>
+															</button>
+														</div>
+													)
+												)}
+											</div>
 
-									{/* Upload and Submit Buttons */}
-									<div className="flex items-center space-x-4 mt-4">
-										<label className="relative cursor-pointer px-4 py-3 hover:bg-gray-300 transition-all ease-in-out duration-500 rounded-full flex items-center justify-center bg-gray-100 border border-gray-300">
-											Upload
-											Files
-											<FontAwesomeIcon
-												icon={
-													faUpload
-												}
-												className="ml-3 text-gray-600"
-											/>
-											<input
-												type="file"
-												onChange={
-													handleFileChange
-												}
-												className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-												multiple
-											/>
-										</label>
-										{(selectedFiles.length >
-											0 ||
-											textSubmission.trim() !==
-												'') && (
-											<button
-												onClick={
-													handleUpload
-												}
-												className="bg-drexel-blue text-white px-4 py-3 rounded-full shadow hover:bg-drexel-blue-darker transition"
-											>
-												Submit
-											</button>
-										)}
-									</div>
+											{/* Upload and Submit Buttons */}
+											<div className="flex items-center space-x-4 mt-4">
+												<label className="relative cursor-pointer px-4 py-3 hover:bg-gray-300 transition-all ease-in-out duration-500 rounded-full flex items-center justify-center bg-gray-100 border border-gray-300">
+													Upload
+													Files
+													<FontAwesomeIcon
+														icon={
+															faUpload
+														}
+														className="ml-3 text-gray-600"
+													/>
+													<input
+														type="file"
+														onChange={
+															handleFileChange
+														}
+														className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+														multiple
+													/>
+												</label>
+												{(selectedFiles.length >
+													0 ||
+													textSubmission.trim() !==
+														'') && (
+													<button
+														onClick={
+															handleUpload
+														}
+														className="bg-drexel-blue text-white px-4 py-3 rounded-full shadow hover:bg-drexel-blue-darker transition"
+													>
+														Submit
+													</button>
+												)}
+											</div>
+										</>
+									) : (
+										<p className="text-xl text-green-600">
+											You
+											have
+											submitted
+											this
+											assignment.
+										</p>
+									)}
+
 									{uploadStatus && (
 										<p className="mt-2 ml-2 text-sm text-gray-500">
-											{
-												uploadStatus
-											}
+											{uploadStatus !==
+												'Submission successful' && (
+												<span className="text-red-500">
+													Error:{' '}
+													{
+														uploadStatus
+													}
+												</span>
+											)}
 										</p>
 									)}
 								</div>
