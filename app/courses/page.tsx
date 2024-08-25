@@ -37,14 +37,22 @@ export default function CoursesPage() {
 	// Fetch assignments once courses are loaded
 	useEffect(() => {
 		async function fetchAllAssignments() {
-			const assignmentsMap: { [course: string]: AssignmentDisplay[] } = {};
+			const assignmentsMap: {
+				[course: string]: AssignmentDisplay[];
+			} = {};
 			for (const course of courses) {
-				const res = await fetch(`/api/courses/${course.course_id}/assignments`);
+				const res = await fetch(
+					`/api/courses/${course.course_id}/assignments`
+				);
 				const data: Assignment[] = await res.json();
-				assignmentsMap[course.course_name] = data.map((assignment: Assignment) => ({
-					title: assignment.title,
-					dueDate: new Date(assignment.due_date).toLocaleDateString(),
-				}));
+				assignmentsMap[course.course_name] = data.map(
+					(assignment: Assignment) => ({
+						title: assignment.title,
+						dueDate: new Date(
+							assignment.due_date
+						).toLocaleDateString(),
+					})
+				);
 			}
 			setAllAssignments(assignmentsMap); // Set the allAssignments state
 		}
@@ -56,7 +64,9 @@ export default function CoursesPage() {
 
 	const handleCourseClick = async (course: Course) => {
 		setSelectedCourse(course);
-		const res = await fetch(`/api/courses/${course.course_id}/assignments`);
+		const res = await fetch(
+			`/api/courses/${course.course_id}/assignments`
+		);
 		const data: Assignment[] = await res.json();
 		setAssignments(data); // Set the assignments state for the selected course
 		setIsModalOpen(true);
@@ -96,7 +106,9 @@ export default function CoursesPage() {
 				courseCode={selectedCourse?.course_code}
 				assignments={assignments.map((assignment) => ({
 					title: assignment.title,
-					dueDate: new Date(assignment.due_date).toLocaleDateString(),
+					dueDate: new Date(
+						assignment.due_date
+					).toLocaleDateString(),
 				}))}
 				allAssignments={allAssignments}
 			/>
