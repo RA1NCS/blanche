@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import CourseGrid from '@/components/Courses/CourseGrid';
 import CourseModal from '@/components/Courses/CourseModal';
 import RightBar from '@/components/RightBar';
@@ -157,39 +157,45 @@ export default function CoursesPage() {
 	};
 
 	return (
-		<div className="flex">
-			{/* Main Content */}
-			<div className="flex-grow">
-				<CourseGrid
-					courses={courses}
-					onCourseClick={handleCourseClick}
-					searchQuery={searchQuery}
-					setSearchQuery={setSearchQuery}
-				/>
-				<CourseModal
-					isModalOpen={isModalOpen}
-					selectedCourse={selectedCourse}
-					selectedAssignment={selectedAssignment}
-					onClose={handleCloseModal}
-					onBackToCourse={handleBackToCourse} // New handler for back to course
+		<Suspense fallback={<div>Loading...</div>}>
+			<div className="flex">
+				{/* Main Content */}
+				<div className="flex-grow">
+					<CourseGrid
+						courses={courses}
+						onCourseClick={handleCourseClick}
+						searchQuery={searchQuery}
+						setSearchQuery={setSearchQuery}
+					/>
+					<CourseModal
+						isModalOpen={isModalOpen}
+						selectedCourse={selectedCourse}
+						selectedAssignment={
+							selectedAssignment
+						}
+						onClose={handleCloseModal}
+						onBackToCourse={handleBackToCourse} // New handler for back to course
+					/>
+				</div>
+
+				{/* Right Side Bar */}
+				<RightBar
+					isVisible={isRightBarVisible}
+					setIsVisible={setIsRightBarVisible}
+					courseName={selectedCourse?.course_name}
+					courseCode={selectedCourse?.course_code}
+					assignments={assignments.map(
+						(assignment) => ({
+							title: assignment.title,
+							dueDate: new Date(
+								assignment.due_date
+							).toLocaleDateString(),
+						})
+					)}
+					allAssignments={allAssignments}
+					onAssignmentClick={handleAssignmentClick} // Handle assignment click
 				/>
 			</div>
-
-			{/* Right Side Bar */}
-			<RightBar
-				isVisible={isRightBarVisible}
-				setIsVisible={setIsRightBarVisible}
-				courseName={selectedCourse?.course_name}
-				courseCode={selectedCourse?.course_code}
-				assignments={assignments.map((assignment) => ({
-					title: assignment.title,
-					dueDate: new Date(
-						assignment.due_date
-					).toLocaleDateString(),
-				}))}
-				allAssignments={allAssignments}
-				onAssignmentClick={handleAssignmentClick} // Handle assignment click
-			/>
-		</div>
+		</Suspense>
 	);
 }

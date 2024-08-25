@@ -293,7 +293,7 @@ export default function CourseModal({
 										)}
 									</div>
 									{uploadStatus && (
-										<p className="mt-2 text-sm text-gray-500">
+										<p className="mt-2 ml-2 text-sm text-gray-500">
 											{
 												uploadStatus
 											}
