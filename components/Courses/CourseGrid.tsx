@@ -40,7 +40,7 @@ export default function CourseGrid({
 			</div>
 
 			{/* Courses Grid */}
-			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 py-8 px-6 rounded-3xl border border-gray-300 ">
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 py-8 px-6 rounded-3xl border border-gray-300">
 				{filteredCourses.map((course) => (
 					<div
 						key={course.course_id}

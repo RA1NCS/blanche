@@ -74,6 +74,8 @@ CREATE TABLE assignments (
     title VARCHAR(100) NOT NULL,
     description TEXT,
     due_date TIMESTAMP,
+    content TEXT,
+    attachment_url TEXT,
     FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
 );
 
@@ -88,14 +90,17 @@ VALUES
 (5, 'Project Proposal', 'Submit a proposal for the final software engineering project.', '2023-09-15 23:59:59');
 
 -- Grades table
-CREATE TABLE grades (
-    grade_id SERIAL PRIMARY KEY,
+CREATE TABLE student_submissions (
+    submission_id SERIAL PRIMARY KEY,
     assignment_id INT NOT NULL,
     student_id INT NOT NULL,
-    grade DECIMAL(5, 2) CHECK (grade >= 0 AND grade <= 100),
+    submission_text TEXT,
+    submission_file_url TEXT,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (assignment_id) REFERENCES assignments(assignment_id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
+
 
 -- Insert sample grades
 INSERT INTO grades (assignment_id, student_id, grade)

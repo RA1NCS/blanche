@@ -15,6 +15,7 @@ interface RightBarProps {
 	courseCode?: string;
 	assignments?: AssignmentDisplay[];
 	allAssignments?: { [course: string]: AssignmentDisplay[] };
+	onAssignmentClick: (assignment: AssignmentDisplay) => void;
 }
 
 export default function RightBar({
@@ -24,28 +25,24 @@ export default function RightBar({
 	courseCode = '',
 	assignments = [],
 	allAssignments = {},
+	onAssignmentClick,
 }: RightBarProps) {
 	const renderAssignments = () => {
 		if (courseName && assignments.length > 0) {
 			return (
 				<>
-					{/* Course Info */}
-					<div className="p-4 border-b border-gray-300">
-						<h3 className="text-xl font-bold">
-							{courseName}
-						</h3>
-						<p className="text-gray-600">
-							{courseCode}
-						</p>
-					</div>
-
 					{/* Assignments List */}
 					<div className="p-4 overflow-y-auto">
 						{assignments.map(
 							(assignment, index) => (
 								<div
 									key={index}
-									className="p-2 mb-2 bg-gray-100 rounded-lg"
+									className="p-2 mb-2 bg-gray-100 rounded-lg cursor-pointer"
+									onClick={() =>
+										onAssignmentClick(
+											assignment
+										)
+									}
 								>
 									<h4 className="text-sm font-semibold">
 										{
@@ -91,7 +88,12 @@ export default function RightBar({
 												key={
 													index
 												}
-												className="p-2 ml-1 mr-4 mb-2 bg-gray-100 rounded-lg"
+												className="p-2 ml-1 mr-4 mb-2 bg-gray-100 rounded-lg cursor-pointer"
+												onClick={() =>
+													onAssignmentClick(
+														assignment
+													)
+												}
 											>
 												<h4 className="text-sm font-semibold">
 													{

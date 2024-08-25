@@ -46,6 +46,8 @@ CREATE TABLE assignments (
     title VARCHAR(100) NOT NULL,
     description TEXT,
     due_date TIMESTAMP,
+    content TEXT,
+    attachment_url TEXT,
     FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
 );
 
@@ -55,6 +57,18 @@ CREATE TABLE grades (
     assignment_id INT NOT NULL,
     student_id INT NOT NULL,
     grade DECIMAL(5, 2) CHECK (grade >= 0 AND grade <= 100),
+    FOREIGN KEY (assignment_id) REFERENCES assignments(assignment_id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Grades table
+CREATE TABLE student_submissions (
+    submission_id SERIAL PRIMARY KEY,
+    assignment_id INT NOT NULL,
+    student_id INT NOT NULL,
+    submission_text TEXT,
+    submission_file_url TEXT,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (assignment_id) REFERENCES assignments(assignment_id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
