@@ -1,3 +1,5 @@
+'use client';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { useUser } from '@clerk/nextjs';
@@ -27,21 +29,14 @@ export default function RightBar({
 	onEditAssignment,
 }: RightBarProps) {
 	const { user } = useUser();
-
 	const isProfessor = user?.unsafeMetadata?.role === 'professor';
 
-	const formatDate = (isoDateString: string) => {
-		const date = new Date(isoDateString);
-		return date.toLocaleDateString(undefined, {
-			year: 'numeric',
-			month: 'numeric',
-			day: 'numeric',
-			hour: 'numeric',
-			minute: 'numeric',
-		});
-	};
-
 	const renderAssignments = () => {
+		// Filter out courses with no assignments
+		const filteredCourses = Object.keys(allAssignments).filter(
+			(course) => allAssignments[course].length > 0
+		);
+
 		if (courseName && assignments.length > 0) {
 			return (
 				<>
@@ -59,20 +54,20 @@ export default function RightBar({
 										{assignment.title}
 									</h4>
 									<p className="text-xs text-gray-500">
-										Due: {formatDate(assignment.due_date)}
+										Due:{' '}
+										{new Date(
+											assignment.due_date
+										).toLocaleDateString()}
 									</p>
 								</div>
 								{isProfessor && (
 									<button
-										className="absolute -top-2 right-0 bg-white rounded-full w-6 h-6 border hover:bg-gray-50"
+										className="absolute -top-4 right-0 bg-white rounded-full p-1 border hover:bg-gray-50"
 										onClick={() =>
 											onEditAssignment(assignment)
 										}
 									>
-										<FontAwesomeIcon
-											icon={faPencilAlt}
-											className="text-xs text-gray-500"
-										/>
+										<FontAwesomeIcon icon={faPencilAlt} />
 									</button>
 								)}
 							</div>
@@ -91,45 +86,39 @@ export default function RightBar({
 					</div>
 				</>
 			);
-		} else {
+		} else if (filteredCourses.length > 0) {
 			return (
 				<div className="p-4 overflow-y-auto">
-					{Object.keys(allAssignments).length > 0 ? (
-						Object.keys(allAssignments).map((course) => (
-							<div
-								key={course}
-								className="mb-4"
-							>
-								<h3 className="pl-2 text-lg font-semibold mb-2">
-									{course}
-								</h3>
-								{allAssignments[course].map((assignment, index) => (
-									<div
-										key={index}
-										className="p-2 ml-1 mr-4 mb-2 bg-gray-100 rounded-lg cursor-pointer"
-										onClick={() =>
-											onAssignmentClick(assignment)
-										}
-									>
-										<h4 className="text-sm font-semibold">
-											{assignment.title}
-										</h4>
-										<p className="text-xs text-gray-500">
-											Due:{' '}
-											{formatDate(
-												assignment.due_date
-											)}
-										</p>
-									</div>
-								))}
-								<hr className="w-[80%] ml-2 my-4" />
-							</div>
-						))
-					) : (
-						<p className="text-gray-500">No assignments available.</p>
-					)}
+					{filteredCourses.map((course) => (
+						<div
+							key={course}
+							className="mb-4"
+						>
+							<h3 className="pl-2 text-lg font-semibold mb-2">{course}</h3>
+							{allAssignments[course].map((assignment, index) => (
+								<div
+									key={index}
+									className="p-2 ml-1 mr-4 mb-2 bg-gray-100 rounded-lg cursor-pointer"
+									onClick={() => onAssignmentClick(assignment)}
+								>
+									<h4 className="text-sm font-semibold">
+										{assignment.title}
+									</h4>
+									<p className="text-xs text-gray-500">
+										Due:{' '}
+										{new Date(
+											assignment.due_date
+										).toLocaleDateString()}
+									</p>
+								</div>
+							))}
+							<hr className="w-[80%] ml-2 my-4" />
+						</div>
+					))}
 				</div>
 			);
+		} else {
+			return <p className="text-gray-500 text-center">No assignments available.</p>;
 		}
 	};
 
@@ -141,7 +130,7 @@ export default function RightBar({
 				} w-64`}
 			>
 				<h3 className="font-semibold text-3xl p-8 text-drexel-blue">Assignments</h3>
-				<hr className="" />
+				<hr />
 				{renderAssignments()}
 			</div>
 

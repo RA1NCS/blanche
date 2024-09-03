@@ -10,7 +10,7 @@ interface CourseModalProps {
 	onClose: () => void;
 	onBackToCourse: () => void;
 	onEditAssignment: () => void;
-	onDeleteAssignment: () => void;
+	onDeleteAssignment: () => void; // To trigger deletion
 }
 
 export default function CourseModal({

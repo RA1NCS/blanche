@@ -66,21 +66,23 @@ export default function CoursesPage() {
 	const handleAssignmentClick = async (assignment: Assignment) => {
 		// Find the course corresponding to the assignment
 		const course = courses.find((c) =>
-			assignments.some((a) => a.assignment_id === assignment.assignment_id)
+			allAssignments[c.course_name]?.some((a) => a.assignment_id === assignment.assignment_id)
 		);
 
 		if (course) {
+			// Set the selected course and assignments
 			setSelectedCourse(course);
-			// Fetch assignments for the selected course
+
+			// Fetch and set assignments for the selected course
 			const res = await fetch(`/api/courses/${course.course_id}/assignments`);
 			const data: Assignment[] = await res.json();
 			setAssignments(data);
 
-			// Find and set the selected assignment
+			// Set the clicked assignment as the selected assignment
 			const selectedAssignment = data.find((a) => a.assignment_id === assignment.assignment_id);
 			if (selectedAssignment) {
 				setSelectedAssignment(selectedAssignment);
-				setIsModalOpen(true);
+				setIsModalOpen(true); // Open the modal with the selected assignment
 			}
 		}
 	};
@@ -98,15 +100,34 @@ export default function CoursesPage() {
 	const handleDeleteAssignment = async () => {
 		if (selectedAssignment) {
 			try {
-				await fetch(`/api/assignments/${selectedAssignment.assignment_id}`, {
+				// Send a DELETE request to the backend API
+				const response = await fetch(`/api/assignments/${selectedAssignment.assignment_id}`, {
 					method: 'DELETE',
 				});
-				// Refetch assignments after deletion
-				const res = await fetch(`/api/courses/${selectedCourse?.course_id}/assignments`);
-				const data: Assignment[] = await res.json();
-				setAssignments(data);
-				setSelectedAssignment(null);
-				setIsModalOpen(false);
+
+				// Check if the deletion was successful
+				if (response.ok) {
+					// Remove the assignment from the UI
+					const updatedAssignments = assignments.filter(
+						(assignment) =>
+							assignment.assignment_id !== selectedAssignment.assignment_id
+					);
+					setAssignments(updatedAssignments);
+
+					// Update the assignments in the right sidebar
+					setAllAssignments((prev) => {
+						const newAllAssignments = { ...prev };
+						newAllAssignments[selectedCourse?.course_name || ''] =
+							updatedAssignments;
+						return newAllAssignments;
+					});
+
+					// Close the modal and reset the selected assignment
+					setSelectedAssignment(null);
+					setIsModalOpen(false);
+				} else {
+					console.error('Failed to delete assignment:', await response.text());
+				}
 			} catch (error) {
 				console.error('Failed to delete assignment:', error);
 			}
