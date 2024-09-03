@@ -1,7 +1,7 @@
 import { Course, Assignment } from '@/lib/interfaces';
 import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes, faUpload, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faUpload, faTrashAlt, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 
 interface CourseModalProps {
 	isModalOpen: boolean;
@@ -9,6 +9,8 @@ interface CourseModalProps {
 	selectedAssignment: Assignment | null;
 	onClose: () => void;
 	onBackToCourse: () => void;
+	onEditAssignment: () => void;
+	onDeleteAssignment: () => void;
 }
 
 export default function CourseModal({
@@ -17,13 +19,14 @@ export default function CourseModal({
 	selectedAssignment,
 	onClose,
 	onBackToCourse,
+	onEditAssignment,
+	onDeleteAssignment,
 }: CourseModalProps) {
 	const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 	const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 	const [textSubmission, setTextSubmission] = useState<string>('');
 	const [hasSubmitted, setHasSubmitted] = useState<boolean>(false);
 
-	// Handle body scroll lock when modal is open
 	useEffect(() => {
 		if (isModalOpen) {
 			document.body.style.overflow = 'hidden';
@@ -35,25 +38,14 @@ export default function CourseModal({
 	useEffect(() => {
 		async function checkSubmission() {
 			if (selectedAssignment) {
-				console.log(
-					'Checking submission for assignment:',
-					selectedAssignment.assignment_id
-				);
 				try {
 					const response = await fetch(
 						`/api/assignments/${selectedAssignment.assignment_id}/submissions/check`
 					);
 					const data = await response.json();
-					console.log(
-						'Submission check result:',
-						data
-					);
 					setHasSubmitted(data.hasSubmitted);
 				} catch (error) {
-					console.error(
-						'Error fetching submission status:',
-						error
-					);
+					console.error('Error fetching submission status:', error);
 				}
 			}
 		}
@@ -68,7 +60,7 @@ export default function CourseModal({
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const files = Array.from(event.target.files || []);
 		setSelectedFiles((prevFiles) => [...prevFiles, ...files]);
-		setUploadStatus(null); // Reset upload status when a new file is selected
+		setUploadStatus(null);
 	};
 
 	const handleUpload = async () => {
@@ -77,30 +69,22 @@ export default function CourseModal({
 			selectedFiles.forEach((file) => {
 				formData.append('file', file);
 			});
-			formData.append(
-				'assignmentId',
-				selectedAssignment?.assignment_id.toString() || ''
-			);
+			formData.append('assignmentId', selectedAssignment?.assignment_id.toString() || '');
 			formData.append('submissionText', textSubmission);
 
 			try {
-				const response = await fetch(
-					'/api/assignments/upload',
-					{
-						method: 'POST',
-						body: formData,
-					}
-				);
+				const response = await fetch('/api/assignments/upload', {
+					method: 'POST',
+					body: formData,
+				});
 
 				const result = await response.json();
 
 				if (response.ok) {
 					setUploadStatus('Submission successful');
-					setHasSubmitted(true); // Prevent further submissions
+					setHasSubmitted(true);
 				} else {
-					setUploadStatus(
-						result.error || 'Failed to submit'
-					);
+					setUploadStatus(result.error || 'Failed to submit');
 				}
 			} catch (error) {
 				console.error('Error uploading files:', error);
@@ -110,101 +94,62 @@ export default function CourseModal({
 	};
 
 	const handleDeleteFile = (fileIndex: number) => {
-		setSelectedFiles((prevFiles) =>
-			prevFiles.filter((_, index) => index !== fileIndex)
-		);
+		setSelectedFiles((prevFiles) => prevFiles.filter((_, index) => index !== fileIndex));
 	};
 
 	return (
 		<>
-			{/* Background overlay */}
 			<div
 				className={`fixed inset-0 z-40 bg-black bg-opacity-50 transition-opacity duration-500 ease-in-out ${
-					isModalOpen
-						? 'opacity-100'
-						: 'opacity-0 pointer-events-none'
+					isModalOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
 				}`}
 				onClick={onClose}
 			></div>
 
-			{/* Modal */}
 			<div
 				className={`fixed inset-y-0 right-0 z-50 w-full max-w-[97%] rounded-s-2xl bg-white shadow-xl transform transition-transform duration-500 ease-in-out ${
-					isModalOpen
-						? 'translate-x-0'
-						: 'translate-x-full'
+					isModalOpen ? 'translate-x-0' : 'translate-x-full'
 				}`}
 			>
 				<div className="relative h-full flex">
-					{/* Vertical Course Code Bar */}
 					<div className="bg-gray-200 w-48 rounded rounded-e-3xl flex flex-col justify-center items-center">
 						<div className="text-8xl font-bold font-futura-condensed-medium text-gray-400">
-							{selectedCourse.course_code
-								.split('')
-								.map(
-									(
-										char,
-										index
-									) => (
-										<div
-											key={
-												index
-											}
-											className="leading-none mt-4"
-										>
-											{
-												char
-											}
-										</div>
-									)
-								)}
+							{selectedCourse.course_code.split('').map((char, index) => (
+								<div
+									key={index}
+									className="leading-none mt-4"
+								>
+									{char}
+								</div>
+							))}
 						</div>
 					</div>
 
-					{/* Content Area */}
 					{selectedAssignment ? (
 						<div className="flex-1 flex">
-							{/* Left Side: Assignment Instructions */}
 							<div className="w-1/2 p-8 overflow-y-auto border-r border-gray-300 flex flex-col justify-between">
 								<button
 									className="absolute top-8 right-8 text-gray-500 hover:text-gray-700 z-10 text-lg"
-									onClick={
-										onClose
-									}
+									onClick={onClose}
 								>
-									<FontAwesomeIcon
-										icon={
-											faTimes
-										}
-									/>
+									<FontAwesomeIcon icon={faTimes} />
 								</button>
 
 								<div>
 									<h2 className="text-6xl font-bold mb-6">
-										{
-											selectedAssignment?.title
-										}
+										{selectedAssignment?.title}
 									</h2>
 									<p className="mt-2 text-lg mb-4">
-										{
-											selectedAssignment?.description
-										}
+										{selectedAssignment?.description}
 									</p>
 								</div>
 
-								{/* Due Date */}
 								<div className="flex justify-between items-center mt-auto">
 									<button
 										className="text-drexel-blue text-xl transition-all hover:text-blue-700"
-										onClick={
-											onBackToCourse
-										}
+										onClick={onBackToCourse}
 									>
-										&larr;
-										Back
-										to
-										Course
-										Overview
+										&larr; Back to Course Overview
 									</button>
 									<p className="text-lg text-gray-600">
 										Due:{' '}
@@ -217,41 +162,29 @@ export default function CourseModal({
 								</div>
 							</div>
 
-							{/* Right Side: Submission Area */}
-							<div className="w-1/2 p-8 pt-0 overflow-y-auto flex flex-col">
+							<div className="w-1/2 p-8 pt-0 overflow-y-auto h-full flex flex-col">
 								<div className="mt-8">
 									<h1 className="text-6xl font-bold mb-4">
-										Your
-										Submission
+										Your Submission
 									</h1>
 
-									{/* Text Submission Area */}
 									{!hasSubmitted ? (
 										<>
 											<textarea
 												className="w-full max-w-xl p-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
 												placeholder="Type your submission here..."
-												value={
-													textSubmission
-												}
-												onChange={(
-													e
-												) =>
+												value={textSubmission}
+												onChange={(e) =>
 													setTextSubmission(
-														e
-															.target
+														e.target
 															.value
 													)
 												}
-												rows={
-													4
-												}
+												rows={4}
 												style={{
 													overflowY: 'hidden',
 												}}
-												onInput={(
-													e
-												) => {
+												onInput={(e) => {
 													const target =
 														e.target as HTMLTextAreaElement;
 													target.style.height =
@@ -260,7 +193,6 @@ export default function CourseModal({
 												}}
 											></textarea>
 
-											{/* Display Selected Files */}
 											<div className="flex flex-col space-y-2 mt-4">
 												{selectedFiles.map(
 													(
@@ -298,11 +230,9 @@ export default function CourseModal({
 												)}
 											</div>
 
-											{/* Upload and Submit Buttons */}
 											<div className="flex items-center space-x-4 mt-4">
 												<label className="relative cursor-pointer px-4 py-3 hover:bg-gray-300 transition-all ease-in-out duration-500 rounded-full flex items-center justify-center bg-gray-100 border border-gray-300">
-													Upload
-													Files
+													Upload Files
 													<FontAwesomeIcon
 														icon={
 															faUpload
@@ -335,10 +265,7 @@ export default function CourseModal({
 										</>
 									) : (
 										<p className="text-xl text-green-600">
-											You
-											have
-											submitted
-											this
+											You have submitted this
 											assignment.
 										</p>
 									)}
@@ -349,28 +276,40 @@ export default function CourseModal({
 												'Submission successful' && (
 												<span className="text-red-500">
 													Error:{' '}
-													{
-														uploadStatus
-													}
+													{uploadStatus}
 												</span>
 											)}
 										</p>
 									)}
+
+									<div className="flex justify-start bottom-7 absolute">
+										<button
+											onClick={onEditAssignment}
+											className="text-drexel-blue text-lg transition-all hover:text-blue-700 mr-4 border w-12 py-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-3xl"
+										>
+											<FontAwesomeIcon
+												icon={faPencilAlt}
+											/>{' '}
+										</button>
+										<button
+											onClick={onDeleteAssignment}
+											className="text-red-500 text-lg transition-all hover:text-red-700 border w-12 py-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-3xl"
+										>
+											<FontAwesomeIcon
+												icon={faTrashAlt}
+											/>{' '}
+										</button>
+									</div>
 								</div>
 							</div>
 						</div>
 					) : (
-						/* Display Course Code and Name if No Assignment is Selected */
 						<div className="flex-1 flex flex-col justify-center items-center text-center">
 							<h2 className="text-6xl font-bold">
-								{
-									selectedCourse.course_code
-								}
+								{selectedCourse.course_code}
 							</h2>
 							<p className="text-2xl text-gray-600 mt-4">
-								{
-									selectedCourse.course_name
-								}
+								{selectedCourse.course_name}
 							</p>
 						</div>
 					)}

@@ -8,17 +8,19 @@ import UserProfile from './UserProfile';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
 	faBook,
-	faCalendarAlt,
 	faGraduationCap,
 	faEllipsisH,
 	faShieldAlt,
 	faGavel,
 	faUniversalAccess,
 } from '@fortawesome/free-solid-svg-icons';
+import { useUser } from '@clerk/nextjs';
 
 export default function Navbar() {
 	const [hovered, setHovered] = useState(false);
 	const [delayedHovered, setDelayedHovered] = useState(false);
+	const { user } = useUser(); // Fetch the current user's information
+	const [roleMessage, setRoleMessage] = useState<string>('');
 
 	useEffect(() => {
 		let timeoutId: NodeJS.Timeout;
@@ -34,6 +36,20 @@ export default function Navbar() {
 		return () => clearTimeout(timeoutId);
 	}, [hovered]);
 
+	useEffect(() => {
+		if (user) {
+			// Assuming role is stored in user.unsafeMetadata.role
+			const role = user.unsafeMetadata?.role as string;
+			console.log(role, user.unsafeMetadata);
+
+			if (role === 'professor') {
+				setRoleMessage('FACULTY');
+			} else if (role === 'student') {
+				setRoleMessage('STUDENT');
+			}
+		}
+	}, [user]);
+
 	return (
 		<div className="min-h-screen flex flex-col bg-gray-50 text-gray-800">
 			<div className="w-full bg-transparent px-6 pt-8 pb-6">
@@ -45,6 +61,9 @@ export default function Navbar() {
 						objectFit="contain"
 					/>
 				</div>
+			</div>
+			<div className="px-6 pb-4 font-medium text-center tracking-widest text-drexel-blue">
+				{roleMessage}
 			</div>
 			<hr className="h-px w-[80%] mx-auto my-1 bg-gray-300 border-0" />
 			<div className="flex-grow flex flex-col justify-between overflow-y-auto px-2 py-8 mx-5">
@@ -61,24 +80,10 @@ export default function Navbar() {
 							label="Courses"
 						/>
 						<NavItem
-							href="/deadlines"
-							icon={
-								<FontAwesomeIcon
-									icon={
-										faCalendarAlt
-									}
-									className="w-5 h-5 mr-3"
-								/>
-							}
-							label="Deadlines"
-						/>
-						<NavItem
 							href="/grades"
 							icon={
 								<FontAwesomeIcon
-									icon={
-										faGraduationCap
-									}
+									icon={faGraduationCap}
 									className="w-5 h-5 mr-3"
 								/>
 							}
@@ -124,9 +129,7 @@ export default function Navbar() {
 							title="Accessibility"
 						>
 							<FontAwesomeIcon
-								icon={
-									faUniversalAccess
-								}
+								icon={faUniversalAccess}
 								className="w-4 h-4"
 							/>
 						</a>

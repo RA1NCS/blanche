@@ -12,19 +12,13 @@ export async function POST() {
 	const user = await currentUser();
 
 	if (!user) {
-		return NextResponse.json(
-			{ error: 'User not authenticated' },
-			{ status: 401 }
-		);
+		return NextResponse.json({ error: 'User not authenticated' }, { status: 401 });
 	}
 
 	const profileImageUrl = user.unsafeMetadata?.profile_image_url;
 
 	if (typeof profileImageUrl !== 'string') {
-		return NextResponse.json(
-			{ error: 'No profile image to delete' },
-			{ status: 400 }
-		);
+		return NextResponse.json({ error: 'No profile image to delete' }, { status: 400 });
 	}
 
 	try {
@@ -33,14 +27,16 @@ export async function POST() {
 
 		if (publicId) {
 			// Delete the image from Cloudinary
-			await cloudinary.uploader.destroy(
-				`user_profile_images/${publicId}`
-			);
+			await cloudinary.uploader.destroy(`user_profile_images/${publicId}`);
 
-			// Update user metadata to remove the profile image URL
+			// Fetch the existing unsafeMetadata to preserve other fields
+			const existingMetadata = (await clerkClient.users.getUser(user.id)).unsafeMetadata || {};
+
+			// Update user metadata to remove the profile image URL while preserving other fields
 			await clerkClient.users.updateUser(user.id, {
 				unsafeMetadata: {
-					profile_image_url: null,
+					...existingMetadata, // Preserve existing metadata
+					profile_image_url: null, // Set profile_image_url to null
 				},
 			});
 
@@ -52,9 +48,6 @@ export async function POST() {
 		}
 	} catch (error) {
 		console.error('Error deleting profile image:', error);
-		return NextResponse.json(
-			{ error: 'Failed to delete profile image' },
-			{ status: 500 }
-		);
+		return NextResponse.json({ error: 'Failed to delete profile image' }, { status: 500 });
 	}
 }

@@ -1,8 +1,9 @@
 export interface Assignment {
 	assignment_id: number;
+	course_id: number; // Add this line if it's valid
 	title: string;
 	description: string;
-	due_date: string;
+	due_date: string; // Assuming you have a due_date field
 }
 
 export interface AssignmentDisplay {
