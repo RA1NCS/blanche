@@ -2,7 +2,6 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import CourseGrid from '@/components/Courses/CourseGrid';
-import { useSearchParams } from 'next/navigation';
 import CourseModal from '@/components/Courses/CourseModal';
 import RightBar from '@/components/RightBar';
 import { Course, Assignment } from '@/lib/interfaces';
@@ -11,9 +10,11 @@ export default function CoursesPage() {
 	const [courses, setCourses] = useState<Course[]>([]);
 	const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
 	const [assignments, setAssignments] = useState<Assignment[]>([]);
-	const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
+	const [selectedAssignment, setSelectedAssignment] =
+		useState<Assignment | null>(null);
 	const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 	const [isRightBarVisible, setIsRightBarVisible] = useState<boolean>(false);
+	const [editMode, setEditMode] = useState<boolean>(false);
 	const [searchQuery, setSearchQuery] = useState<string>('');
 	const [allAssignments, setAllAssignments] = useState<{
 		[course: string]: Assignment[];
@@ -41,7 +42,9 @@ export default function CoursesPage() {
 				[course: string]: Assignment[];
 			} = {};
 			for (const course of courses) {
-				const res = await fetch(`/api/courses/${course.course_id}/assignments`);
+				const res = await fetch(
+					`/api/courses/${course.course_id}/assignments`
+				);
 				const data: Assignment[] = await res.json();
 				assignmentsMap[course.course_name] = data;
 			}
@@ -55,7 +58,9 @@ export default function CoursesPage() {
 
 	const handleCourseClick = async (course: Course) => {
 		setSelectedCourse(course);
-		const res = await fetch(`/api/courses/${course.course_id}/assignments`);
+		const res = await fetch(
+			`/api/courses/${course.course_id}/assignments`
+		);
 		const data: Assignment[] = await res.json();
 		setAssignments(data); // Set the assignments state for the selected course
 		setSelectedAssignment(null); // Reset selected assignment when course changes
@@ -64,70 +69,87 @@ export default function CoursesPage() {
 	};
 
 	const handleAssignmentClick = async (assignment: Assignment) => {
-		// Find the course corresponding to the assignment
+		setEditMode(false); // Disable edit mode initially
 		const course = courses.find((c) =>
-			allAssignments[c.course_name]?.some((a) => a.assignment_id === assignment.assignment_id)
+			allAssignments[c.course_name]?.some(
+				(a) => a.assignment_id === assignment.assignment_id
+			)
 		);
 
 		if (course) {
-			// Set the selected course and assignments
 			setSelectedCourse(course);
-
-			// Fetch and set assignments for the selected course
-			const res = await fetch(`/api/courses/${course.course_id}/assignments`);
+			const res = await fetch(
+				`/api/courses/${course.course_id}/assignments`
+			);
 			const data: Assignment[] = await res.json();
 			setAssignments(data);
-
-			// Set the clicked assignment as the selected assignment
-			const selectedAssignment = data.find((a) => a.assignment_id === assignment.assignment_id);
+			const selectedAssignment = data.find(
+				(a) => a.assignment_id === assignment.assignment_id
+			);
 			if (selectedAssignment) {
 				setSelectedAssignment(selectedAssignment);
-				setIsModalOpen(true); // Open the modal with the selected assignment
+				setIsModalOpen(true);
 			}
 		}
 	};
 
-	const handleEditAssignment = (assignment: Assignment) => {
-		setSelectedAssignment(assignment); // Open the selected assignment in edit mode
-		setIsModalOpen(true);
+	const handleEditAssignment = async (updatedAssignment: Assignment) => {
+		try {
+			const response = await fetch(
+				`/api/assignments/${updatedAssignment.assignment_id}`,
+				{
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(updatedAssignment),
+				}
+			);
+
+			if (response.ok) {
+				const updatedAssignments = assignments.map(
+					(assignment) =>
+						assignment.assignment_id ===
+						updatedAssignment.assignment_id
+							? updatedAssignment
+							: assignment
+				);
+				setAssignments(updatedAssignments);
+				setSelectedAssignment(updatedAssignment);
+				setEditMode(false); // Exit edit mode
+			} else {
+				console.error(
+					'Failed to update assignment:',
+					await response.text()
+				);
+			}
+		} catch (error) {
+			console.error('Failed to update assignment:', error);
+		}
 	};
 
 	const handleCreateAssignment = () => {
 		setSelectedAssignment(null); // Clear any selected assignment
-		setIsModalOpen(true); // Open the modal in create mode
+		setEditMode(true); // Open in edit mode
+		setIsModalOpen(true);
 	};
 
 	const handleDeleteAssignment = async () => {
 		if (selectedAssignment) {
 			try {
-				// Send a DELETE request to the backend API
-				const response = await fetch(`/api/assignments/${selectedAssignment.assignment_id}`, {
-					method: 'DELETE',
-				});
-
-				// Check if the deletion was successful
-				if (response.ok) {
-					// Remove the assignment from the UI
-					const updatedAssignments = assignments.filter(
-						(assignment) =>
-							assignment.assignment_id !== selectedAssignment.assignment_id
-					);
-					setAssignments(updatedAssignments);
-
-					// Update the assignments in the right sidebar
-					setAllAssignments((prev) => {
-						const newAllAssignments = { ...prev };
-						newAllAssignments[selectedCourse?.course_name || ''] =
-							updatedAssignments;
-						return newAllAssignments;
-					});
-
-					// Close the modal and reset the selected assignment
-					setSelectedAssignment(null);
-					setIsModalOpen(false);
-				} else {
-					console.error('Failed to delete assignment:', await response.text());
-				}
+				await fetch(
+					`/api/assignments/${selectedAssignment.assignment_id}`,
+					{
+						method: 'DELETE',
+					}
+				);
+				const res = await fetch(
+					`/api/courses/${selectedCourse?.course_id}/assignments`
+				);
+				const data: Assignment[] = await res.json();
+				setAssignments(data);
+				setSelectedAssignment(null);
+				setIsModalOpen(false);
 			} catch (error) {
 				console.error('Failed to delete assignment:', error);
 			}
@@ -138,12 +160,14 @@ export default function CoursesPage() {
 		setIsModalOpen(false);
 		setSelectedCourse(null);
 		setAssignments([]);
-		setSelectedAssignment(null); // Reset selected assignment when modal closes
-		setIsRightBarVisible(false); // Hide the bar after closing the modal
+		setSelectedAssignment(null);
+		setIsRightBarVisible(false);
+		setEditMode(false);
 	};
 
 	const handleBackToCourse = () => {
-		setSelectedAssignment(null); // Reset selected assignment to go back to course view
+		setSelectedAssignment(null);
+		setEditMode(false);
 	};
 
 	return (
@@ -160,11 +184,19 @@ export default function CoursesPage() {
 					<CourseModal
 						isModalOpen={isModalOpen}
 						selectedCourse={selectedCourse}
-						selectedAssignment={selectedAssignment}
+						selectedAssignment={
+							selectedAssignment
+						}
 						onClose={handleCloseModal}
 						onBackToCourse={handleBackToCourse}
-						onEditAssignment={() => handleEditAssignment(selectedAssignment!)}
-						onDeleteAssignment={handleDeleteAssignment}
+						onEditAssignment={
+							handleEditAssignment
+						}
+						onDeleteAssignment={
+							handleDeleteAssignment
+						}
+						editMode={editMode}
+						setEditMode={setEditMode}
 					/>
 				</Suspense>
 			</div>
@@ -178,7 +210,11 @@ export default function CoursesPage() {
 				assignments={assignments}
 				allAssignments={allAssignments}
 				onAssignmentClick={handleAssignmentClick}
-				onEditAssignment={handleEditAssignment}
+				onEditAssignment={(assignment) => {
+					setSelectedAssignment(assignment); // Set the correct assignment
+					setEditMode(true); // Enable edit mode
+					setIsModalOpen(true); // Open the modal
+				}}
 				onCreateAssignment={handleCreateAssignment}
 			/>
 		</div>
