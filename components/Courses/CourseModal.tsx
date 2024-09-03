@@ -17,7 +17,7 @@ interface CourseModalProps {
 	onBackToCourse: () => void;
 	onEditAssignment: (updatedAssignment: Assignment) => void;
 	onDeleteAssignment: () => void;
-	onCreateAssignment: (newAssignment: Assignment) => void; // New prop for assignment creation
+	onCreateAssignment: (newAssignment: Assignment) => void;
 	editMode: boolean;
 	setEditMode: (mode: boolean) => void;
 }
@@ -30,7 +30,7 @@ export default function CourseModal({
 	onBackToCourse,
 	onEditAssignment,
 	onDeleteAssignment,
-	onCreateAssignment, // Handle the new assignment creation
+	onCreateAssignment,
 	editMode,
 	setEditMode,
 }: CourseModalProps) {
@@ -38,14 +38,19 @@ export default function CourseModal({
 	const [description, setDescription] = useState<string>(
 		selectedAssignment?.description || ''
 	);
+	const [dueDate, setDueDate] = useState<string>(
+		selectedAssignment?.due_date || ''
+	);
 
 	useEffect(() => {
 		if (selectedAssignment) {
 			setTitle(selectedAssignment.title);
 			setDescription(selectedAssignment.description);
+			setDueDate(selectedAssignment.due_date);
 		} else if (editMode) {
 			setTitle(''); // Reset title for new assignment creation
 			setDescription(''); // Reset description for new assignment creation
+			setDueDate(''); // Reset due date for new assignment creation
 		}
 	}, [selectedAssignment, editMode]);
 
@@ -55,6 +60,7 @@ export default function CourseModal({
 				...selectedAssignment,
 				title,
 				description,
+				due_date: dueDate,
 			};
 			onEditAssignment(updatedAssignment);
 		} else if (editMode && !selectedAssignment) {
@@ -63,7 +69,7 @@ export default function CourseModal({
 				course_id: selectedCourse!.course_id,
 				title,
 				description,
-				due_date: new Date().toISOString(), // Placeholder due date, allow editing later
+				due_date: dueDate || new Date().toISOString(), // Placeholder due date, allow editing later
 			};
 			onCreateAssignment(newAssignment);
 		}
@@ -131,42 +137,42 @@ export default function CourseModal({
 							<div>
 								{editMode ? (
 									<>
-										<div
-											contentEditable
-											suppressContentEditableWarning
-											onInput={(
+										<input
+											type="text"
+											value={
+												title
+											}
+											onChange={(
 												e
 											) =>
 												setTitle(
 													e
-														.currentTarget
-														.textContent ||
-														''
+														.target
+														.value
 												)
 											}
-											className="w-full p-2 border-b border-gray-300 focus:outline-none focus:border-drexel-blue text-6xl font-bold text-gray-700"
-										>
-											{title ||
-												'Enter title...'}
-										</div>
-										<div
-											contentEditable
-											suppressContentEditableWarning
-											onInput={(
+											className="w-full p-2 border-b border-gray-300 focus:outline-none focus:border-drexel-blue text-6xl font-bold text-gray-700 bg-transparent"
+											placeholder="Enter title..."
+										/>
+										<textarea
+											value={
+												description
+											}
+											onChange={(
 												e
 											) =>
 												setDescription(
 													e
-														.currentTarget
-														.textContent ||
-														''
+														.target
+														.value
 												)
 											}
-											className="w-full p-2 border-b border-gray-300 focus:outline-none focus:border-drexel-blue text-lg text-gray-700 mt-4"
-										>
-											{description ||
-												'Enter description...'}
-										</div>
+											className="w-full p-2 border-b border-gray-300 focus:outline-none focus:border-drexel-blue text-lg text-gray-700 bg-transparent mt-4"
+											rows={
+												6
+											}
+											placeholder="Enter description..."
+										/>
 									</>
 								) : (
 									<>
@@ -185,6 +191,37 @@ export default function CourseModal({
 							</div>
 
 							<div className="flex justify-between items-center mt-auto">
+								{editMode ? (
+									<input
+										type="date"
+										value={
+											dueDate
+												? dueDate.split(
+														'T'
+												  )[0]
+												: ''
+										}
+										onChange={(
+											e
+										) =>
+											setDueDate(
+												e
+													.target
+													.value
+											)
+										}
+										className="text-lg text-gray-700 focus:outline-none bg-transparent"
+									/>
+								) : (
+									<p className="text-lg text-gray-600">
+										Due:{' '}
+										{dueDate
+											? new Date(
+													dueDate
+											  ).toLocaleDateString()
+											: 'No due date available'}
+									</p>
+								)}
 								<button
 									className="text-drexel-blue text-xl transition-all hover:text-blue-700"
 									onClick={
@@ -195,14 +232,6 @@ export default function CourseModal({
 									to Course
 									Overview
 								</button>
-								<p className="text-lg text-gray-600">
-									Due:{' '}
-									{selectedAssignment?.due_date
-										? new Date(
-												selectedAssignment.due_date
-										  ).toLocaleDateString()
-										: 'No due date available'}
-								</p>
 							</div>
 						</div>
 
