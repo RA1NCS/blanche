@@ -128,10 +128,40 @@ export default function CoursesPage() {
 		}
 	};
 
-	const handleCreateAssignment = () => {
-		setSelectedAssignment(null); // Clear any selected assignment
-		setEditMode(true); // Open in edit mode
-		setIsModalOpen(true);
+	const handleCreateAssignment = async (newAssignment: Assignment) => {
+		try {
+			const response = await fetch(`/api/assignments`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(newAssignment),
+			});
+
+			if (response.ok) {
+				const createdAssignment = await response.json();
+				setAssignments([...assignments, createdAssignment]);
+				setAllAssignments((prev) => ({
+					...prev,
+					[selectedCourse?.course_name || '']: [
+						...(prev[
+							selectedCourse?.course_name ||
+								''
+						] || []),
+						createdAssignment,
+					],
+				}));
+				setSelectedAssignment(createdAssignment);
+				setIsModalOpen(false);
+			} else {
+				console.error(
+					'Failed to create assignment:',
+					await response.text()
+				);
+			}
+		} catch (error) {
+			console.error('Failed to create assignment:', error);
+		}
 	};
 
 	const handleDeleteAssignment = async () => {
@@ -195,6 +225,9 @@ export default function CoursesPage() {
 						onDeleteAssignment={
 							handleDeleteAssignment
 						}
+						onCreateAssignment={
+							handleCreateAssignment
+						} // Handle assignment creation
 						editMode={editMode}
 						setEditMode={setEditMode}
 					/>
@@ -215,7 +248,11 @@ export default function CoursesPage() {
 					setEditMode(true); // Enable edit mode
 					setIsModalOpen(true); // Open the modal
 				}}
-				onCreateAssignment={handleCreateAssignment}
+				onCreateAssignment={() => {
+					setEditMode(true);
+					setSelectedAssignment(null); // Clear selection for new assignment
+					setIsModalOpen(true);
+				}}
 			/>
 		</div>
 	);

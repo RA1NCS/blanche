@@ -17,6 +17,7 @@ interface CourseModalProps {
 	onBackToCourse: () => void;
 	onEditAssignment: (updatedAssignment: Assignment) => void;
 	onDeleteAssignment: () => void;
+	onCreateAssignment: (newAssignment: Assignment) => void; // New prop for assignment creation
 	editMode: boolean;
 	setEditMode: (mode: boolean) => void;
 }
@@ -29,6 +30,7 @@ export default function CourseModal({
 	onBackToCourse,
 	onEditAssignment,
 	onDeleteAssignment,
+	onCreateAssignment, // Handle the new assignment creation
 	editMode,
 	setEditMode,
 }: CourseModalProps) {
@@ -41,8 +43,11 @@ export default function CourseModal({
 		if (selectedAssignment) {
 			setTitle(selectedAssignment.title);
 			setDescription(selectedAssignment.description);
+		} else if (editMode) {
+			setTitle(''); // Reset title for new assignment creation
+			setDescription(''); // Reset description for new assignment creation
 		}
-	}, [selectedAssignment]);
+	}, [selectedAssignment, editMode]);
 
 	const handleSave = () => {
 		if (selectedAssignment) {
@@ -51,10 +56,18 @@ export default function CourseModal({
 				title,
 				description,
 			};
-
 			onEditAssignment(updatedAssignment);
-			setEditMode(false);
+		} else if (editMode && !selectedAssignment) {
+			const newAssignment = {
+				assignment_id: Date.now(), // Temporary ID, replace with actual ID from DB
+				course_id: selectedCourse!.course_id,
+				title,
+				description,
+				due_date: new Date().toISOString(), // Placeholder due date, allow editing later
+			};
+			onCreateAssignment(newAssignment);
 		}
+		setEditMode(false);
 	};
 
 	if (!isModalOpen || !selectedCourse) return null;
@@ -102,146 +115,142 @@ export default function CourseModal({
 						</div>
 					</div>
 
-					{selectedAssignment ? (
-						<div className="flex-1 flex">
-							<div className="w-1/2 p-8 overflow-y-auto border-r border-gray-300 flex flex-col justify-between">
-								<button
-									className="absolute top-8 right-8 text-gray-500 hover:text-gray-700 z-10 text-lg"
-									onClick={
-										onClose
+					<div className="flex-1 flex">
+						<div className="w-1/2 p-8 overflow-y-auto border-r border-gray-300 flex flex-col justify-between">
+							<button
+								className="absolute top-8 right-8 text-gray-500 hover:text-gray-700 z-10 text-lg"
+								onClick={onClose}
+							>
+								<FontAwesomeIcon
+									icon={
+										faTimes
 									}
-								>
-									<FontAwesomeIcon
-										icon={
-											faTimes
-										}
-									/>
-								</button>
+								/>
+							</button>
 
-								<div>
-									{editMode ? (
-										<>
-											<input
-												type="text"
-												value={
-													title
-												}
-												onChange={(
+							<div>
+								{editMode ? (
+									<>
+										<div
+											contentEditable
+											suppressContentEditableWarning
+											onInput={(
+												e
+											) =>
+												setTitle(
 													e
-												) =>
-													setTitle(
-														e
-															.target
-															.value
-													)
-												}
-												className="w-full p-2 border-b border-gray-300 focus:outline-none focus:border-drexel-blue text-6xl font-bold text-gray-700"
-												placeholder="Enter title..."
-											/>
-											<textarea
-												value={
-													description
-												}
-												onChange={(
+														.currentTarget
+														.textContent ||
+														''
+												)
+											}
+											className="w-full p-2 border-b border-gray-300 focus:outline-none focus:border-drexel-blue text-6xl font-bold text-gray-700"
+										>
+											{title ||
+												'Enter title...'}
+										</div>
+										<div
+											contentEditable
+											suppressContentEditableWarning
+											onInput={(
+												e
+											) =>
+												setDescription(
 													e
-												) =>
-													setDescription(
-														e
-															.target
-															.value
-													)
-												}
-												className="w-full p-2 border-b border-gray-300 focus:outline-none focus:border-drexel-blue text-lg text-gray-700 mt-4"
-												placeholder="Enter description..."
-												rows={
-													6
-												}
-											/>
-										</>
-									) : (
-										<>
-											<h2 className="text-6xl font-bold mb-6">
-												{
-													selectedAssignment.title
-												}
-											</h2>
-											<p className="mt-2 text-lg mb-4">
-												{
-													selectedAssignment.description
-												}
-											</p>
-										</>
-									)}
-								</div>
-
-								<div className="flex justify-between items-center mt-auto">
-									<button
-										className="text-drexel-blue text-xl transition-all hover:text-blue-700"
-										onClick={
-											onBackToCourse
-										}
-									>
-										&larr;
-										Back
-										to
-										Course
-										Overview
-									</button>
-									<p className="text-lg text-gray-600">
-										Due:{' '}
-										{selectedAssignment?.due_date
-											? new Date(
-													selectedAssignment.due_date
-											  ).toLocaleDateString()
-											: 'No due date available'}
-									</p>
-								</div>
+														.currentTarget
+														.textContent ||
+														''
+												)
+											}
+											className="w-full p-2 border-b border-gray-300 focus:outline-none focus:border-drexel-blue text-lg text-gray-700 mt-4"
+										>
+											{description ||
+												'Enter description...'}
+										</div>
+									</>
+								) : (
+									<>
+										<h2 className="text-6xl font-bold mb-6">
+											{
+												title
+											}
+										</h2>
+										<p className="mt-2 text-lg mb-4">
+											{
+												description
+											}
+										</p>
+									</>
+								)}
 							</div>
 
-							<div className="w-1/2 p-8 pt-0 overflow-y-auto h-full flex flex-col">
-								<div className="mt-8">
-									<div className="flex justify-start bottom-7 absolute">
-										{editMode ? (
-											<>
-												<button
-													onClick={
-														handleSave
-													}
-													className="text-green-500 text-lg transition-all hover:text-green-700 mr-4 border w-12 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
-												>
-													<FontAwesomeIcon
-														icon={
-															faSave
-														}
-													/>
-												</button>
-												<button
-													onClick={() =>
-														setEditMode(
-															false
-														)
-													}
-													className="text-gray-500 text-lg transition-all hover:text-gray-700 mr-4 border w-28 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
-												>
-													Discard
-												</button>
-											</>
-										) : (
+							<div className="flex justify-between items-center mt-auto">
+								<button
+									className="text-drexel-blue text-xl transition-all hover:text-blue-700"
+									onClick={
+										onBackToCourse
+									}
+								>
+									&larr; Back
+									to Course
+									Overview
+								</button>
+								<p className="text-lg text-gray-600">
+									Due:{' '}
+									{selectedAssignment?.due_date
+										? new Date(
+												selectedAssignment.due_date
+										  ).toLocaleDateString()
+										: 'No due date available'}
+								</p>
+							</div>
+						</div>
+
+						<div className="w-1/2 p-8 pt-0 overflow-y-auto h-full flex flex-col">
+							<div className="mt-8">
+								<div className="flex justify-start bottom-7 absolute">
+									{editMode ? (
+										<>
 											<button
-												onClick={() =>
-													setEditMode(
-														true
-													)
+												onClick={
+													handleSave
 												}
-												className="text-drexel-blue text-lg transition-all hover:text-drexel-blue-darker mr-4 border w-12 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
+												className="text-green-500 text-lg transition-all hover:text-green-700 mr-4 border w-12 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
 											>
 												<FontAwesomeIcon
 													icon={
-														faPencilAlt
+														faSave
 													}
 												/>
 											</button>
-										)}
+											<button
+												onClick={() =>
+													setEditMode(
+														false
+													)
+												}
+												className="text-gray-500 text-lg transition-all hover:text-gray-700 mr-4 border w-28 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
+											>
+												Discard
+											</button>
+										</>
+									) : (
+										<button
+											onClick={() =>
+												setEditMode(
+													true
+												)
+											}
+											className="text-drexel-blue text-lg transition-all hover:text-drexel-blue-darker mr-4 border w-12 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
+										>
+											<FontAwesomeIcon
+												icon={
+													faPencilAlt
+												}
+											/>
+										</button>
+									)}
+									{selectedAssignment && (
 										<button
 											onClick={
 												onDeleteAssignment
@@ -254,24 +263,11 @@ export default function CourseModal({
 												}
 											/>
 										</button>
-									</div>
+									)}
 								</div>
 							</div>
 						</div>
-					) : (
-						<div className="flex-1 flex flex-col justify-center items-center text-center">
-							<h2 className="text-6xl font-bold">
-								{
-									selectedCourse.course_code
-								}
-							</h2>
-							<p className="text-2xl text-gray-600 mt-4">
-								{
-									selectedCourse.course_name
-								}
-							</p>
-						</div>
-					)}
+					</div>
 				</div>
 			</div>
 		</>
