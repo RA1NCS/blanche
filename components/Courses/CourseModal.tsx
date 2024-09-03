@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
 	faTimes,
-	faUpload,
 	faTrashAlt,
 	faPencilAlt,
 	faSave,
@@ -48,33 +47,59 @@ export default function CourseModal({
 			setDescription(selectedAssignment.description);
 			setDueDate(selectedAssignment.due_date);
 		} else if (editMode) {
-			setTitle(''); // Reset title for new assignment creation
-			setDescription(''); // Reset description for new assignment creation
-			setDueDate(''); // Reset due date for new assignment creation
+			// Clear fields for new assignment
+			setTitle('');
+			setDescription('');
+			setDueDate('');
 		}
 	}, [selectedAssignment, editMode]);
 
 	const handleSave = () => {
-		if (selectedAssignment) {
+		// Parse the due date to ensure it's correctly formatted for the backend
+		const adjustedDueDate = new Date(dueDate);
+		adjustedDueDate.setMinutes(
+			adjustedDueDate.getMinutes() +
+				adjustedDueDate.getTimezoneOffset()
+		); // Adjust for timezone offset
+
+		const formattedDueDate = adjustedDueDate.toISOString().split('T')[0]; // Format the date as YYYY-MM-DD
+
+		if (editMode && selectedAssignment) {
 			const updatedAssignment = {
 				...selectedAssignment,
 				title,
 				description,
-				due_date: dueDate,
+				due_date: formattedDueDate, // Send the formatted due date
 			};
 			onEditAssignment(updatedAssignment);
 		} else if (editMode && !selectedAssignment) {
-			const newAssignment = {
-				assignment_id: Date.now(), // Temporary ID, replace with actual ID from DB
-				course_id: selectedCourse!.course_id,
+			const newAssignment: Assignment = {
+				assignment_id: Date.now(), // Temporary ID, this will be replaced by the backend
+				course_id: selectedCourse?.course_id || 0,
 				title,
 				description,
-				due_date: dueDate || new Date().toISOString(), // Placeholder due date, allow editing later
+				due_date: formattedDueDate, // Send the formatted due date
 			};
 			onCreateAssignment(newAssignment);
 		}
 		setEditMode(false);
 	};
+
+	const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setTitle(e.target.value);
+	};
+
+	const handleDescriptionChange = (
+		e: React.ChangeEvent<HTMLTextAreaElement>
+	) => {
+		setDescription(e.target.value);
+	};
+
+	const handleDueDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setDueDate(e.target.value);
+	};
+
+	const today = new Date().toISOString().split('T')[0]; // Get today's date in YYYY-MM-DD format
 
 	if (!isModalOpen || !selectedCourse) return null;
 
@@ -121,182 +146,186 @@ export default function CourseModal({
 						</div>
 					</div>
 
-					<div className="flex-1 flex">
-						<div className="w-1/2 p-8 overflow-y-auto border-r border-gray-300 flex flex-col justify-between">
-							<button
-								className="absolute top-8 right-8 text-gray-500 hover:text-gray-700 z-10 text-lg"
-								onClick={onClose}
-							>
-								<FontAwesomeIcon
-									icon={
-										faTimes
-									}
-								/>
-							</button>
-
-							<div>
-								{editMode ? (
-									<>
-										<input
-											type="text"
-											value={
-												title
-											}
-											onChange={(
-												e
-											) =>
-												setTitle(
-													e
-														.target
-														.value
-												)
-											}
-											className="w-full p-2 border-b border-gray-300 focus:outline-none focus:border-drexel-blue text-6xl font-bold text-gray-700 bg-transparent"
-											placeholder="Enter title..."
-										/>
-										<textarea
-											value={
-												description
-											}
-											onChange={(
-												e
-											) =>
-												setDescription(
-													e
-														.target
-														.value
-												)
-											}
-											className="w-full p-2 border-b border-gray-300 focus:outline-none focus:border-drexel-blue text-lg text-gray-700 bg-transparent mt-4"
-											rows={
-												6
-											}
-											placeholder="Enter description..."
-										/>
-									</>
-								) : (
-									<>
-										<h2 className="text-6xl font-bold mb-6">
-											{
-												title
-											}
-										</h2>
-										<p className="mt-2 text-lg mb-4">
-											{
-												description
-											}
-										</p>
-									</>
-								)}
-							</div>
-
-							<div className="flex justify-between items-center mt-auto">
-								{editMode ? (
-									<input
-										type="date"
-										value={
-											dueDate
-												? dueDate.split(
-														'T'
-												  )[0]
-												: ''
-										}
-										onChange={(
-											e
-										) =>
-											setDueDate(
-												e
-													.target
-													.value
-											)
-										}
-										className="text-lg text-gray-700 focus:outline-none bg-transparent"
-									/>
-								) : (
-									<p className="text-lg text-gray-600">
-										Due:{' '}
-										{dueDate
-											? new Date(
-													dueDate
-											  ).toLocaleDateString()
-											: 'No due date available'}
-									</p>
-								)}
+					{selectedAssignment || editMode ? (
+						<div className="flex-1 flex">
+							<div className="w-1/2 p-8 overflow-y-auto border-r border-gray-300 flex flex-col justify-between">
 								<button
-									className="text-drexel-blue text-xl transition-all hover:text-blue-700"
+									className="absolute top-8 right-8 text-gray-500 hover:text-gray-700 z-10 text-lg"
 									onClick={
-										onBackToCourse
+										onClose
 									}
 								>
-									&larr; Back
-									to Course
-									Overview
+									<FontAwesomeIcon
+										icon={
+											faTimes
+										}
+									/>
 								</button>
-							</div>
-						</div>
 
-						<div className="w-1/2 p-8 pt-0 overflow-y-auto h-full flex flex-col">
-							<div className="mt-8">
-								<div className="flex justify-start bottom-7 absolute">
+								<div>
 									{editMode ? (
 										<>
-											<button
-												onClick={
-													handleSave
+											<input
+												type="text"
+												value={
+													title
 												}
-												className="text-green-500 text-lg transition-all hover:text-green-700 mr-4 border w-12 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
-											>
-												<FontAwesomeIcon
-													icon={
-														faSave
-													}
-												/>
-											</button>
-											<button
-												onClick={() =>
-													setEditMode(
-														false
-													)
+												onChange={
+													handleTitleChange
 												}
-												className="text-gray-500 text-lg transition-all hover:text-gray-700 mr-4 border w-28 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
-											>
-												Discard
-											</button>
+												className="w-full mb-4 p-2 border-b border-gray-300 focus:outline-none focus:border-drexel-blue text-6xl font-bold text-gray-700"
+												placeholder="Enter title..."
+											/>
+											<textarea
+												value={
+													description
+												}
+												onChange={
+													handleDescriptionChange
+												}
+												className="w-full p-2 border-b border-gray-300 focus:outline-none focus:border-drexel-blue text-lg text-gray-700 mt-4"
+												placeholder="Enter description..."
+											/>
 										</>
 									) : (
-										<button
-											onClick={() =>
-												setEditMode(
-													true
-												)
-											}
-											className="text-drexel-blue text-lg transition-all hover:text-drexel-blue-darker mr-4 border w-12 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
-										>
-											<FontAwesomeIcon
-												icon={
-													faPencilAlt
+										<>
+											<h2 className="text-6xl font-bold mb-6">
+												{
+													selectedAssignment?.title
 												}
-											/>
-										</button>
+											</h2>
+											<p className="mt-2 text-lg mb-4">
+												{
+													selectedAssignment?.description
+												}
+											</p>
+										</>
 									)}
-									{selectedAssignment && (
-										<button
-											onClick={
-												onDeleteAssignment
-											}
-											className="text-red-500 text-lg transition-all hover:text-red-700 border w-12 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
-										>
-											<FontAwesomeIcon
-												icon={
-													faTrashAlt
+								</div>
+
+								<div className="flex justify-between items-center mt-auto">
+									<button
+										className="text-drexel-blue text-xl transition-all hover:text-blue-700"
+										onClick={
+											onBackToCourse
+										}
+									>
+										&larr;
+										Back
+										to
+										Course
+										Overview
+									</button>
+									{!editMode && (
+										<p className="text-lg text-gray-600">
+											Due:{' '}
+											{selectedAssignment?.due_date
+												? new Date(
+														selectedAssignment.due_date
+												  ).toLocaleDateString()
+												: 'No due date available'}
+										</p>
+									)}
+									{editMode && (
+										<div className="bottom-8 right-8">
+											<input
+												type="date"
+												value={
+													dueDate
+														? dueDate.split(
+																'T'
+														  )[0]
+														: today
 												}
+												onChange={
+													handleDueDateChange
+												}
+												className="p-2 focus:outline-none focus:border-drexel-blue text-lg text-gray-700 bg-gray-50 border border-gray-300 rounded-lg"
+												min={
+													today
+												} // Restrict dates before today
 											/>
-										</button>
+										</div>
 									)}
 								</div>
 							</div>
+
+							<div className="w-1/2 p-8 pt-0 overflow-y-auto h-full flex flex-col">
+								<div className="mt-8">
+									<div className="flex justify-start bottom-7 absolute">
+										{editMode ? (
+											<>
+												<button
+													onClick={
+														handleSave
+													}
+													className="text-green-500 text-lg transition-all hover:text-green-700 mr-4 border w-12 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
+												>
+													<FontAwesomeIcon
+														icon={
+															faSave
+														}
+													/>
+												</button>
+												<button
+													onClick={() =>
+														setEditMode(
+															false
+														)
+													}
+													className="text-gray-500 text-lg transition-all hover:text-gray-700 mr-4 border w-28 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
+												>
+													Discard
+												</button>
+											</>
+										) : (
+											<button
+												onClick={() =>
+													setEditMode(
+														true
+													)
+												}
+												className="text-drexel-blue text-lg transition-all hover:text-drexel-blue-darker mr-4 border w-12 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
+											>
+												<FontAwesomeIcon
+													icon={
+														faPencilAlt
+													}
+												/>
+											</button>
+										)}
+										{selectedAssignment && (
+											<button
+												onClick={
+													onDeleteAssignment
+												}
+												className="text-red-500 text-lg transition-all hover:text-red-700 border w-12 h-12 p-2 bg-gray-100 hover:bg-gray-50 border-gray-800 rounded-full"
+											>
+												<FontAwesomeIcon
+													icon={
+														faTrashAlt
+													}
+												/>
+											</button>
+										)}
+									</div>
+								</div>
+							</div>
 						</div>
-					</div>
+					) : (
+						<div className="flex-1 flex flex-col justify-center items-center text-center">
+							<h2 className="text-6xl font-bold">
+								{
+									selectedCourse.course_code
+								}
+							</h2>
+							<p className="text-2xl text-gray-600 mt-4">
+								{
+									selectedCourse.course_name
+								}
+							</p>
+						</div>
+					)}
 				</div>
 			</div>
 		</>

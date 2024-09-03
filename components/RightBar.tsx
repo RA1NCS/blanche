@@ -1,3 +1,5 @@
+'use client';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
 import { useUser } from '@clerk/nextjs';
@@ -30,144 +32,84 @@ export default function RightBar({
 	const isProfessor = user?.unsafeMetadata?.role === 'professor';
 
 	const renderAssignments = () => {
-		if (courseName) {
-			if (assignments.length > 0) {
-				return (
-					<>
-						<div className="p-4 overflow-y-auto">
-							{assignments.map(
-								(
-									assignment,
-									index
-								) => (
-									<div
-										key={
-											index
-										}
-										className="relative mb-4"
-									>
-										<div
-											className="p-2 bg-gray-100 rounded-lg cursor-pointer"
-											onClick={() =>
-												onAssignmentClick(
-													assignment
-												)
-											}
-										>
-											<h4 className="text-sm font-semibold">
-												{
-													assignment.title
-												}
-											</h4>
-											<p className="text-xs text-gray-500">
-												Due:{' '}
-												{new Date(
-													assignment.due_date
-												).toLocaleDateString()}
-											</p>
-										</div>
-										{isProfessor && (
-											<button
-												className="absolute -top-4 right-0 bg-white rounded-full text-xs text-gray-600 w-8 h-8 border hover:bg-gray-50"
-												onClick={() =>
-													onEditAssignment(
-														assignment
-													)
-												}
-											>
-												<FontAwesomeIcon
-													icon={
-														faPencilAlt
-													}
-												/>
-											</button>
-										)}
-									</div>
-								)
-							)}
-							{isProfessor && (
-								<>
-									<hr className="mt-2 mb-4" />
-									<div
-										className="p-2 w-20 mx-auto mb-2 bg-gray-100 rounded-2xl cursor-pointer text-center text-black"
-										onClick={
-											onCreateAssignment
-										}
-									>
-										+
-									</div>
-								</>
-							)}
-						</div>
-					</>
-				);
-			} else {
-				return (
-					<div className="p-4 text-center text-gray-500">
-						No assignments due.
-					</div>
-				);
-			}
-		} else {
-			const filteredCourses = Object.keys(allAssignments).filter(
-				(course) => allAssignments[course].length > 0
-			);
-
-			if (filteredCourses.length > 0) {
-				return (
+		if (courseName && assignments.length > 0) {
+			return (
+				<>
 					<div className="p-4 overflow-y-auto">
-						{filteredCourses.map((course) => (
-							<div
-								key={course}
-								className="mb-4"
-							>
-								<h3 className="pl-2 text-lg font-semibold mb-2">
-									{course}
-								</h3>
-								{allAssignments[
-									course
-								].map(
-									(
-										assignment,
-										index
-									) => (
-										<div
-											key={
-												index
+						{assignments.map(
+							(assignment, index) => (
+								<div
+									key={index}
+									className="relative mb-4"
+								>
+									<div
+										className="p-2 bg-gray-100 rounded-lg cursor-pointer"
+										onClick={() =>
+											onAssignmentClick(
+												assignment
+											)
+										}
+									>
+										<h4 className="text-sm font-semibold">
+											{
+												assignment.title
 											}
-											className="p-2 ml-1 mr-4 mb-2 bg-gray-100 rounded-lg cursor-pointer"
+										</h4>
+										<p className="text-xs text-gray-500">
+											Due:{' '}
+											{new Date(
+												assignment.due_date
+											).toLocaleDateString()}
+										</p>
+									</div>
+									{isProfessor && (
+										<button
+											className="absolute -top-2 -right-2 bg-white rounded-full text-xs text-gray-600 w-8 h-8 border transition-all hover:bg-gray-100"
 											onClick={() =>
-												onAssignmentClick(
+												onEditAssignment(
 													assignment
 												)
 											}
 										>
-											<h4 className="text-sm font-semibold">
-												{
-													assignment.title
+											<FontAwesomeIcon
+												icon={
+													faPencilAlt
 												}
-											</h4>
-											<p className="text-xs text-gray-500">
-												Due:{' '}
-												{new Date(
-													assignment.due_date
-												).toLocaleDateString()}
-											</p>
-										</div>
-									)
-								)}
-								<hr className="w-[80%] ml-2 my-4" />
-							</div>
-						))}
+											/>
+										</button>
+									)}
+								</div>
+							)
+						)}
+						{isProfessor && (
+							<>
+								<hr className="mt-2 mb-4" />
+								<div
+									className="p-2 w-20 mx-auto mb-2 bg-gray-100 rounded-2xl cursor-pointer text-center text-black"
+									onClick={
+										onCreateAssignment
+									}
+								>
+									+
+								</div>
+							</>
+						)}
 					</div>
-				);
-			} else {
-				return (
-					<p className="text-gray-500 text-center">
-						No assignments available.
-					</p>
-				);
-			}
+				</>
+			);
+		} else if (courseName && assignments.length === 0 && isProfessor) {
+			return (
+				<div className="p-4 overflow-y-auto flex justify-center items-center">
+					<div
+						className="p-2 w-20 bg-gray-100 rounded-2xl cursor-pointer text-center text-black"
+						onClick={onCreateAssignment}
+					>
+						+
+					</div>
+				</div>
+			);
+		} else {
+			return null;
 		}
 	};
 
