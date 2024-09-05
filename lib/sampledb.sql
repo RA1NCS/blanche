@@ -68,7 +68,7 @@ VALUES
 (4, 1, '001'), -- John Doe in section 001 of CS260
 (5, 2, '002'); -- Jane Doe in section 002 of CS270
 
--- Assignments table
+-- Assignments table with private column
 CREATE TABLE assignments (
     assignment_id SERIAL PRIMARY KEY,
     course_id INT NOT NULL,
@@ -77,18 +77,19 @@ CREATE TABLE assignments (
     due_date TIMESTAMP,
     content TEXT,
     attachment_url TEXT,
+    private BOOLEAN DEFAULT FALSE, -- new private field
     FOREIGN KEY (course_id) REFERENCES courses(course_id) ON DELETE CASCADE
 );
 
 -- Insert sample assignments
-INSERT INTO assignments (course_id, title, description, due_date)
+INSERT INTO assignments (course_id, title, description, due_date, private)
 VALUES
-(1, 'Homework 1', 'Complete the initial setup for the programming project.', '2023-08-31 23:59:59'),
-(1, 'Midterm Project', 'Build a basic software project following the course guidelines.', '2023-09-30 23:59:59'),
-(2, 'Assignment 1', 'Solve problems related to data structures and algorithms.', '2023-08-25 23:59:59'),
-(3, 'Homework 1', 'Prove theorems using discrete mathematics.', '2023-09-05 23:59:59'),
-(4, 'Lab Assignment 1', 'Write assembly code to implement given algorithms.', '2023-09-10 23:59:59'),
-(5, 'Project Proposal', 'Submit a proposal for the final software engineering project.', '2023-09-15 23:59:59');
+(1, 'Homework 1', 'Complete the initial setup for the programming project.', '2023-08-31 23:59:59', FALSE),
+(1, 'Midterm Project', 'Build a basic software project following the course guidelines.', '2023-09-30 23:59:59', FALSE),
+(2, 'Assignment 1', 'Solve problems related to data structures and algorithms.', '2023-08-25 23:59:59', TRUE), -- private assignment
+(3, 'Homework 1', 'Prove theorems using discrete mathematics.', '2023-09-05 23:59:59', FALSE),
+(4, 'Lab Assignment 1', 'Write assembly code to implement given algorithms.', '2023-09-10 23:59:59', FALSE),
+(5, 'Project Proposal', 'Submit a proposal for the final software engineering project.', '2023-09-15 23:59:59', TRUE); -- private assignment
 
 -- Student Submissions table
 CREATE TABLE student_submissions (
@@ -100,3 +101,10 @@ CREATE TABLE student_submissions (
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (assignment_id) REFERENCES assignments(assignment_id) ON DELETE CASCADE
 );
+
+-- Insert sample submissions
+INSERT INTO student_submissions (assignment_id, student_id, submission_text)
+VALUES
+(1, 'user_2lWjtJd0YebGLyYbZ4ToKcsuRWu', 'Initial project setup submitted.'),
+(2, 'user_2lWjtJd0YebGLyYbZ4ToKcsuRWu', 'Midterm project proposal submitted.'),
+(3, 'user_2lWjtJd0YebGLyYbZ4ToKcsuRWu', 'Data structures assignment submitted.');

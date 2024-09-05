@@ -4,6 +4,7 @@ export interface Assignment {
 	title: string;
 	description: string;
 	due_date: string;
+	private?: boolean;
 }
 
 export interface AssignmentDisplay {

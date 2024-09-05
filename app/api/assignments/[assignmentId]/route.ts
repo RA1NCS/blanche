@@ -53,7 +53,6 @@ export async function GET(
 	}
 }
 
-/// PUT: Update assignment details, including due_date
 export async function PUT(
 	request: Request,
 	{ params }: { params: { assignmentId: string } }
@@ -69,16 +68,18 @@ export async function PUT(
 	}
 
 	try {
-		// Get the updated fields from the request body
-		const { title, description, due_date } = await request.json();
+		const {
+			title,
+			description,
+			due_date,
+			private: isPrivate,
+		} = await request.json();
 
-		// Update assignment in the database, including due_date
 		const updateResult = await db.query(
-			'UPDATE assignments SET title = $1, description = $2, due_date = $3 WHERE assignment_id = $4 RETURNING *',
-			[title, description, due_date, assignmentId]
+			'UPDATE assignments SET title = $1, description = $2, due_date = $3, private = $4 WHERE assignment_id = $5 RETURNING *',
+			[title, description, due_date, isPrivate, assignmentId]
 		);
 
-		// If no assignment was updated, return a 404 error
 		if (updateResult.rows.length === 0) {
 			return NextResponse.json(
 				{ error: 'Assignment not found' },
@@ -86,7 +87,6 @@ export async function PUT(
 			);
 		}
 
-		// Return the updated assignment
 		return NextResponse.json(updateResult.rows[0]);
 	} catch (error) {
 		console.error('Error updating assignment:', error);
